@@ -2,5 +2,16 @@
     "name": "form-orm",
     "version": "1.0.0",
     "main": "index.js",
-    "license": "MIT"
+    "license": "MIT",
+    "bin": {
+        "form-orm": "bin/index.js"
+    },
+    "dependencies": {
+        "tempy": "^3.0.0",
+        "typescript": "^4.7.4"
+    },
+    "devDependencies": {
+        "@types/node": "^18.0.3",
+        "@types/typescript": "^2.0.0"
+    }
 }

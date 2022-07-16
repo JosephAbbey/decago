@@ -1,0 +1,9 @@
+{
+    "name": "form-orm.test",
+    "dependencies": {
+        "form-orm": "file:../"
+    },
+    "devDependencies": {
+        "typescript": "4.7.4"
+    }
+}
