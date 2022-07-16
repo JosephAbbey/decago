@@ -9,21 +9,6 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function serializeDefault(value, type) {
-    if (value instanceof Function) {
-        if (value.name === 'autoincremental') return 'AUTOINCREMENT';
-        if (value.name === 'now') return `DEFAULT CURRENT_TIMESTAMP`;
-        throw new Error(`${value.name} is not a supported function`);
-    } else {
-        if (type === 'int') return `DEFAULT ${value}`;
-        if (type === 'float') return `DEFAULT ${value}`;
-        if (type === 'string') return `DEFAULT '${value}'`;
-        if (type === 'boolean') return value ? 'DEFAULT 1' : 'DEFAULT 0';
-        if (type === 'date') return `'DEFAULT ${value.toISOString()}'`;
-        throw new Error(`${type} is not supported`);
-    }
-}
-
 module.exports = function main() {
     tempy.then(({ temporaryFileTask }) => {
         temporaryFileTask(
@@ -53,6 +38,27 @@ module.exports = function main() {
                         date: 'DATE',
                         boolean: 'BOOLEAN',
                     };
+
+                    function serializeSqliteDefault(value, type) {
+                        if (value instanceof Function) {
+                            if (value.name === 'autoincremental')
+                                return 'AUTOINCREMENT';
+                            if (value.name === 'now')
+                                return `DEFAULT CURRENT_TIMESTAMP`;
+                            throw new Error(
+                                `${value.name} is not a supported function`
+                            );
+                        } else {
+                            if (type === 'int') return `DEFAULT ${value}`;
+                            if (type === 'float') return `DEFAULT ${value}`;
+                            if (type === 'string') return `DEFAULT '${value}'`;
+                            if (type === 'boolean')
+                                return value ? 'DEFAULT 1' : 'DEFAULT 0';
+                            if (type === 'date')
+                                return `'DEFAULT ${value.toISOString()}'`;
+                            throw new Error(`${type} is not supported`);
+                        }
+                    }
 
                     const source = resolve(
                         './db/schema.ts',
@@ -120,7 +126,7 @@ module.exports = function main() {
                                     fieldSchema._default === undefined
                                         ? ''
                                         : ' ' +
-                                          serializeDefault(
+                                          serializeSqliteDefault(
                                               fieldSchema._default,
                                               fieldSchema.type
                                           )
