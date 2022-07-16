@@ -1,18 +1,18 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS Post(
-    id int NOT NULL PRIMARY KEY,
-    title text NOT NULL,
-    content text NOT NULL,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
     authorId int NOT NULL,
-    createdAt date NOT NULL,
-    updatedAt date NOT NULL,
+    createdAt DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(authorId) REFERENCES User(id)
 );
 
 CREATE TABLE IF NOT EXISTS User(
-    id int NOT NULL PRIMARY KEY,
-    name text NOT NULL,
-    createdAt date NOT NULL,
-    updatedAt date NOT NULL
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    createdAt DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

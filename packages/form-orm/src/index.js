@@ -9,6 +9,20 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+function serializeDefault(value, type) {
+    if (value instanceof Function) {
+        if (value.name === 'autoincremental') return 'AUTOINCREMENT';
+        if (value.name === 'now') return `DEFAULT CURRENT_TIMESTAMP`;
+    } else {
+        if (type === 'int') return `DEFAULT ${value}`;
+        if (type === 'float') return `DEFAULT ${value}`;
+        if (type === 'string') return `DEFAULT '${value}'`;
+        if (type === 'boolean') return value ? 'DEFAULT 1' : 'DEFAULT 0';
+        if (type === 'date') return `'DEFAULT ${value.toISOString()}'`;
+        throw new Error(`${type} is not supported`);
+    }
+}
+
 module.exports = function main() {
     tempy.then(({ temporaryFileTask }) => {
         temporaryFileTask(
@@ -32,11 +46,11 @@ module.exports = function main() {
 
                 if (data.default.type === 'sqlite') {
                     const sqlite = {
-                        int: 'int',
-                        float: 'float',
-                        string: 'text',
-                        date: 'date',
-                        boolean: 'boolean',
+                        int: 'INTEGER',
+                        float: 'FLOAT',
+                        string: 'TEXT',
+                        date: 'DATE',
+                        boolean: 'BOOLEAN',
                     };
 
                     const source = resolve(
@@ -101,6 +115,14 @@ module.exports = function main() {
                                     sqlite[fieldSchema.type]
                                 }${fieldSchema._nullable ? '' : ' NOT NULL'}${
                                     fieldSchema._id ? ' PRIMARY KEY' : ''
+                                }${
+                                    fieldSchema._default === undefined
+                                        ? ''
+                                        : ' ' +
+                                          serializeDefault(
+                                              fieldSchema._default,
+                                              fieldSchema.type
+                                          )
                                 },\n`;
                             }
                         }
@@ -113,6 +135,7 @@ module.exports = function main() {
 
                     writeFileSync(resolve(source, '../init.sql'), sql);
 
+                    writeFileSync(source, '');
                     const sqlite3 = require('sqlite3').verbose();
                     new sqlite3.Database(source).exec(sql).close();
                 }
