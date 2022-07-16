@@ -29,6 +29,7 @@ module.exports = function main() {
                 );
                 const data = require(path);
                 console.log(`data:\n${inspect(data, undefined, 20, true)}\n`);
+
                 if (data.default.type === 'sqlite') {
                     const sqlite = {
                         int: 'int',
@@ -48,6 +49,7 @@ module.exports = function main() {
                     var sql = 'PRAGMA foreign_keys = ON;\n\n';
                     for (const m in data) {
                         const model = data[m];
+                        var foreign_keys = '';
                         if (!(model instanceof f.Model)) continue;
                         sql += `CREATE TABLE IF NOT EXISTS ${model.name}(\n`;
                         for (const field in model.schema) {
@@ -76,7 +78,7 @@ module.exports = function main() {
                                     fieldSchema._nullable ? '' : ' NOT NULL'
                                 },\n`;
 
-                                sql += `    FOREIGN KEY(${field}${capitalizeFirstLetter(
+                                foreign_keys += `    FOREIGN KEY(${field}${capitalizeFirstLetter(
                                     identifier_name
                                 )}) REFERENCES ${
                                     fieldSchema.name
@@ -102,12 +104,17 @@ module.exports = function main() {
                                 },\n`;
                             }
                         }
-                        sql += `);\n\n`;
+                        sql += foreign_keys;
+                        sql = sql.slice(0, -2);
+                        sql += `\n);\n\n`;
                     }
                     sql = sql.slice(0, -1);
                     console.log(`sql:\n${sql}`);
 
                     writeFileSync(resolve(source, '../init.sql'), sql);
+
+                    const sqlite3 = require('sqlite3').verbose();
+                    new sqlite3.Database(source).exec(sql).close();
                 }
             },
             { extension: 'js' }
