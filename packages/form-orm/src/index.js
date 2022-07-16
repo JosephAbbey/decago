@@ -13,6 +13,7 @@ function serializeDefault(value, type) {
     if (value instanceof Function) {
         if (value.name === 'autoincremental') return 'AUTOINCREMENT';
         if (value.name === 'now') return `DEFAULT CURRENT_TIMESTAMP`;
+        throw new Error(`${value.name} is not a supported function`);
     } else {
         if (type === 'int') return `DEFAULT ${value}`;
         if (type === 'float') return `DEFAULT ${value}`;
