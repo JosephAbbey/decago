@@ -40,6 +40,7 @@ module.exports = function main() {
 
                     const source = resolve(
                         './db/schema.ts',
+                        '../',
                         data.default.source
                     );
                     console.log(`source: ${source}\n`);
@@ -103,8 +104,10 @@ module.exports = function main() {
                         }
                         sql += `);\n\n`;
                     }
-                    sql = sql.slice(0, -2);
+                    sql = sql.slice(0, -1);
                     console.log(`sql:\n${sql}`);
+
+                    writeFileSync(resolve(source, '../init.sql'), sql);
                 }
             },
             { extension: 'js' }
