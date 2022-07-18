@@ -47,16 +47,60 @@ const doSelect = <T>(select: Select<T> | undefined) => [
 export class User {
     constructor(
         private db: Database,
-        public id: number,
-        public name: string,
-        public createdAt: Date,
-        public updatedAt: Date
+        private _id: number,
+        private _name: string,
+        private _createdAt: Date,
+        private _updatedAt: Date
     ) {}
 
-    posts = (select?: Select<Post>) => {
-        select?.where?.['authorId']
-            ? (select.where['authorId'] = this.id)
-            : null;
+    get id() {
+        return this._id;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get createdAt() {
+        return this._createdAt;
+    }
+
+    get updatedAt() {
+        return this._updatedAt;
+    }
+
+    set id(value: number) {
+        this._id = value;
+        this.db.run('UPDATE User SET id = ? WHERE id = ?', value, this._id);
+    }
+
+    set name(value: string) {
+        this._name = value;
+        this.db.run('UPDATE User SET name = ? WHERE id = ?', value, this._id);
+    }
+
+    set createdAt(value: Date) {
+        this._createdAt = value;
+        this.db.run(
+            'UPDATE User SET createdAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
+    }
+
+    set updatedAt(value: Date) {
+        this._updatedAt = value;
+        this.db.run(
+            'UPDATE User SET updatedAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
+    }
+
+    posts(select?: Select<Post>) {
+        select = select || {};
+        select.where = select.where || {};
+        select.where.authorId = this._id;
         return new PostsPromise((resolve, reject) => {
             this.db.all(
                 `SELECT * FROM Post ? ? ? ?`,
@@ -73,7 +117,7 @@ export class User {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        this.id,
+                                        this._id,
                                         row.createdAt,
                                         row.updatedAt
                                     )
@@ -83,7 +127,7 @@ export class User {
                 }
             );
         });
-    };
+    }
 }
 
 export class UserPromise extends Promise<User> {
@@ -111,19 +155,89 @@ export class UsersPromise extends Promise<User[]> {
 export class Post {
     constructor(
         private db: Database,
-        public id: number,
-        public title: string,
-        public content: string,
-        public authorId: number,
-        public createdAt: Date,
-        public updatedAt: Date
+        private _id: number,
+        private _title: string,
+        private _content: string,
+        private _authorId: number,
+        private _createdAt: Date,
+        private _updatedAt: Date
     ) {}
+
+    get id() {
+        return this._id;
+    }
+
+    get title() {
+        return this._title;
+    }
+
+    get content() {
+        return this._content;
+    }
+
+    get authorId() {
+        return this._authorId;
+    }
+
+    get createdAt() {
+        return this._createdAt;
+    }
+
+    get updatedAt() {
+        return this._updatedAt;
+    }
+
+    set id(value: number) {
+        this._id = value;
+        this.db.run('UPDATE Post SET id = ? WHERE id = ?', value, this._id);
+    }
+
+    set title(value: string) {
+        this._title = value;
+        this.db.run('UPDATE Post SET title = ? WHERE id = ?', value, this._id);
+    }
+
+    set content(value: string) {
+        this._content = value;
+        this.db.run(
+            'UPDATE Post SET content = ? WHERE id = ?',
+            value,
+            this._id
+        );
+    }
+
+    set authorId(value: number) {
+        this._authorId = value;
+        this.db.run(
+            'UPDATE Post SET authorId = ? WHERE id = ?',
+            value,
+            this._id
+        );
+    }
+
+    set createdAt(value: Date) {
+        this._createdAt = value;
+        this.db.run(
+            'UPDATE Post SET createdAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
+    }
+
+    set updatedAt(value: Date) {
+        this._updatedAt = value;
+        this.db.run(
+            'UPDATE Post SET updatedAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
+    }
 
     author = () =>
         new UserPromise((resolve, reject) =>
             this.db.get(
                 'SELECT * FROM User WHERE id = ?',
-                [this.authorId],
+                [this._authorId],
                 (error, result): void => {
                     if (error) {
                         reject(error);
