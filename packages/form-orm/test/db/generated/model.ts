@@ -53,7 +53,7 @@ export class Post {
         private _updatedAt: Date,
         private _authorId: number
     ) {}
-    
+
     get id(): number {
         return this._id;
     }
@@ -101,13 +101,53 @@ export class Post {
         this._authorId = value;
         this.db.run('UPDATE Post SET authorId = ? WHERE id = ?', value, this._id);
     }
+
+    author = () =>
+        new UserPromise((resolve, reject) =>
+            this.db.get(
+                'SELECT * FROM User WHERE id = ?',
+                [this._authorId],
+                (error, result): void => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(
+                            new User(
+                                this.db,
+                                result.id,
+                                result.name,
+                                result.createdAt,
+                                result.updatedAt
+                            )
+                        );
+                    }
+                }
+            )
+        );
 }
 
 export class PostPromise extends Promise<Post> {
+    author = () =>
+        new UserPromise((resolve, reject) => {
+            this.then((post) => resolve(post.author()));
+            this.catch((error) => reject(error));
+        });
 }
 
 export class PostsPromise extends Promise<Post[]> {
+    author = () =>
+        new UsersPromise((resolve, reject) => {
+            this.then((posts) =>
+                resolve(
+                    Promise.all(posts.flatMap((post) => post.author())).then(
+                        (users) => users.flat()
+                    )
+                )
+            );
+            this.catch((error) => reject(error));
+        });
 }
+
 export class User {
     constructor(
         private db: sqlite.Database,
@@ -116,7 +156,7 @@ export class User {
         private _createdAt: Date,
         private _updatedAt: Date
     ) {}
-    
+
     get id(): number {
         return this._id;
     }
@@ -148,12 +188,60 @@ export class User {
         this._updatedAt = value;
         this.db.run('UPDATE User SET updatedAt = ? WHERE id = ?', value, this._id);
     }
+
+    posts(select?: Select<Post>) {
+        select = select || {};
+        select.where = select.where || {};
+        select.where.authorId = this._id;
+        return new PostsPromise((resolve, reject) => {
+            this.db.all(
+                `SELECT * FROM Post ? ? ? ?`,
+                doSelect(select),
+                (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(
+                            rows.map(
+                                (row) =>
+                                    new Post(
+                                        this.db,
+                                        row.id,
+                                        row.title,
+                                        row.content,
+                                        row.createdAt,
+                                        row.updatedAt,
+                                        this._id
+                                    )
+                            )
+                        );
+                    }
+                }
+            );
+        });
+    }
 }
 
 export class UserPromise extends Promise<User> {
+    posts: (select: Select<Post>) => PostsPromise = (...args) =>
+        new PostsPromise((resolve, reject) => {
+            this.then((user) => resolve(user.posts(...args)));
+            this.catch((error) => reject(error));
+        });
 }
 
 export class UsersPromise extends Promise<User[]> {
+    posts: (select: Select<Post>) => PostsPromise = (...args) =>
+        new PostsPromise((resolve, reject) => {
+            this.then((users) =>
+                resolve(
+                    Promise.all(
+                        users.flatMap(async (user) => await user.posts(...args))
+                    ).then((posts) => posts.flat())
+                )
+            );
+            this.catch((error) => reject(error));
+        });
 }
 
 export class DB {
