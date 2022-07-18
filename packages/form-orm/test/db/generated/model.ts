@@ -107,7 +107,7 @@ export class Post {
             this.db.get(
                 'SELECT * FROM User WHERE id = ?',
                 [this._authorId],
-                (error, result): void => {
+                (error, result) => {
                     if (error) {
                         reject(error);
                     } else {
@@ -189,7 +189,7 @@ export class User {
         this.db.run('UPDATE User SET updatedAt = ? WHERE id = ?', value, this._id);
     }
 
-    posts(select?: Select<Post>) {
+    posts = (select?: Select<Post>) => {
         select = select || {};
         select.where = select.where || {};
         select.where.authorId = this._id;
@@ -211,7 +211,7 @@ export class User {
                                         row.content,
                                         row.createdAt,
                                         row.updatedAt,
-                                        this._id
+                                        row.authorId
                                     )
                             )
                         );

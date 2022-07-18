@@ -340,6 +340,179 @@ ${Object.keys(model.schema)
     }`;
                             })
                             .join('')}
+
+${Object.keys(model.schema)
+    .filter(
+        (key) =>
+            model.schema[key] instanceof f.Model ||
+            model.schema[key] instanceof f.ModelPromise
+    )
+    .map(
+        (key) => `    ${key} = () =>
+        new ${model.schema[key].name}Promise((resolve, reject) =>
+            this.db.get(
+                'SELECT * FROM ${model.schema[key].name} WHERE id = ?',
+                [this._${key}${capitalizeFirstLetter(
+            Object.keys(data[model.schema[key].name].schema)[
+                Object.values(data[model.schema[key].name].schema).findIndex(
+                    (value) => value._id
+                )
+            ]
+        )}],
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(
+                            new ${model.schema[key].name}(
+                                this.db${Object.keys(
+                                    data[model.schema[key].name].schema
+                                )
+                                    .filter(
+                                        (k) =>
+                                            !(
+                                                data[model.schema[key].name]
+                                                    .schema[k] instanceof
+                                                    f.List ||
+                                                data[model.schema[key].name]
+                                                    .schema[k] instanceof
+                                                    f.Model ||
+                                                data[model.schema[key].name]
+                                                    .schema[k] instanceof
+                                                    f.ModelPromise
+                                            )
+                                    )
+                                    .map(
+                                        (key) =>
+                                            `,\n                                result.${key}`
+                                    )
+                                    .join('')}${Object.keys(
+            data[model.schema[key].name].schema
+        )
+            .filter(
+                (k) =>
+                    data[model.schema[key].name].schema[k] instanceof f.Model ||
+                    data[model.schema[key].name].schema[k] instanceof
+                        f.ModelPromise
+            )
+            .map((k) => {
+                const identifier_name = Object.keys(
+                    data[data[model.schema[key].name].schema[k].name].schema
+                )[
+                    Object.values(
+                        data[data[model.schema[key].name].schema[k].name].schema
+                    ).findIndex((value) => value._id)
+                ];
+                return `,\n                                result.${key}${capitalizeFirstLetter(
+                    identifier_name
+                )}`;
+            })
+            .join('')}
+                            )
+                        );
+                    }
+                }
+            )
+        );
+`
+    )}${Object.keys(model.schema)
+                            .filter(
+                                (key) => model.schema[key] instanceof f.List
+                            )
+                            .map(
+                                (key) =>
+                                    `    ${key} = (select?: Select<${
+                                        model.schema[key].of.name
+                                    }>) => {
+        select = select || {};
+        select.where = select.where || {};
+        select.where.authorId = this._id;
+        return new ${model.schema[key].of.name}sPromise((resolve, reject) => {
+            this.db.all(
+                \`SELECT * FROM ${model.schema[key].of.name} ? ? ? ?\`,
+                doSelect(select),
+                (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(
+                            rows.map(
+                                (row) =>
+                                    new ${model.schema[key].of.name}(
+                                        this.db${Object.keys(
+                                            data[model.schema[key].of.name]
+                                                .schema
+                                        )
+                                            .filter(
+                                                (k) =>
+                                                    !(
+                                                        data[
+                                                            model.schema[key].of
+                                                                .name
+                                                        ].schema[k] instanceof
+                                                            f.List ||
+                                                        data[
+                                                            model.schema[key].of
+                                                                .name
+                                                        ].schema[k] instanceof
+                                                            f.Model ||
+                                                        data[
+                                                            model.schema[key].of
+                                                                .name
+                                                        ].schema[k] instanceof
+                                                            f.ModelPromise
+                                                    )
+                                            )
+                                            .map(
+                                                (key) =>
+                                                    `,\n                                        row.${key}`
+                                            )
+                                            .join('')}${Object.keys(
+                                        data[model.schema[key].of.name].schema
+                                    )
+                                        .filter(
+                                            (k) =>
+                                                data[model.schema[key].of.name]
+                                                    .schema[k] instanceof
+                                                    f.Model ||
+                                                data[model.schema[key].of.name]
+                                                    .schema[k] instanceof
+                                                    f.ModelPromise
+                                        )
+                                        .map((k) => {
+                                            const identifier_name = Object.keys(
+                                                data[
+                                                    data[
+                                                        model.schema[key].of
+                                                            .name
+                                                    ].schema[k].name
+                                                ].schema
+                                            )[
+                                                Object.values(
+                                                    data[
+                                                        data[
+                                                            model.schema[key].of
+                                                                .name
+                                                        ].schema[k].name
+                                                    ].schema
+                                                ).findIndex(
+                                                    (value) => value._id
+                                                )
+                                            ];
+                                            return `,\n                                        row.${k}${capitalizeFirstLetter(
+                                                identifier_name
+                                            )}`;
+                                        })
+                                        .join('')}
+                                    )
+                            )
+                        );
+                    }
+                }
+            );
+        });
+    }`
+                            )}
 }
 
 export class ${model.name}Promise extends Promise<${model.name}> {
@@ -347,11 +520,11 @@ export class ${model.name}Promise extends Promise<${model.name}> {
 
 export class ${model.name}sPromise extends Promise<${model.name}[]> {
 }
+
 `;
                     }
 
-                    generated += `
-export class DB {
+                    generated += `export class DB {
     private db: sqlite.Database = new sqlite.Database('${source}');
 ${Object.keys(data)
     .filter((key) => key !== 'default')

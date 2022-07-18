@@ -101,6 +101,30 @@ export class Post {
         this._authorId = value;
         this.db.run('UPDATE Post SET authorId = ? WHERE id = ?', value, this._id);
     }
+
+    author = () =>
+        new UserPromise((resolve, reject) =>
+            this.db.get(
+                'SELECT * FROM User WHERE id = ?',
+                [this._authorId],
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(
+                            new User(
+                                this.db,
+                                result.id,
+                                result.name,
+                                result.createdAt,
+                                result.updatedAt
+                            )
+                        );
+                    }
+                }
+            )
+        );
+
 }
 
 export class PostPromise extends Promise<Post> {
@@ -108,6 +132,7 @@ export class PostPromise extends Promise<Post> {
 
 export class PostsPromise extends Promise<Post[]> {
 }
+
 export class User {
     constructor(
         private db: sqlite.Database,
@@ -147,6 +172,38 @@ export class User {
     set updatedAt(value: Date) {
         this._updatedAt = value;
         this.db.run('UPDATE User SET updatedAt = ? WHERE id = ?', value, this._id);
+    }
+
+    posts = (select?: Select<Post>) => {
+        select = select || {};
+        select.where = select.where || {};
+        select.where.authorId = this._id;
+        return new PostsPromise((resolve, reject) => {
+            this.db.all(
+                `SELECT * FROM Post ? ? ? ?`,
+                doSelect(select),
+                (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(
+                            rows.map(
+                                (row) =>
+                                    new Post(
+                                        this.db,
+                                        row.id,
+                                        row.title,
+                                        row.content,
+                                        row.createdAt,
+                                        row.updatedAt,
+                                        row.authorId
+                                    )
+                            )
+                        );
+                    }
+                }
+            );
+        });
     }
 }
 
