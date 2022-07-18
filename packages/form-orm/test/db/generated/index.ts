@@ -128,9 +128,24 @@ export class Post {
 }
 
 export class PostPromise extends Promise<Post> {
+    author = () => 
+        new UserPromise((resolve, reject) => {
+            this.then((__User) => resolve(__User.author()));
+            this.catch((error) => reject(error));
+        });
 }
 
 export class PostsPromise extends Promise<Post[]> {
+    author = () => 
+        new UsersPromise((resolve, reject) => {
+            this.then((__Posts) => resolve(
+                    Promise.all(__Posts.flatMap((__User) => __User.author())).then(
+                        (__Users) => __Users.flat()
+                    )
+                )
+            );
+            this.catch((error) => reject(error));
+        });
 }
 
 export class User {
@@ -208,9 +223,24 @@ export class User {
 }
 
 export class UserPromise extends Promise<User> {
+    posts: (select: Select<Post>) => PostsPromise = (...args) =>
+        new PostsPromise((resolve, reject) => {
+            this.then((__Post) => resolve(__Post.posts(...args)));
+            this.catch((error) => reject(error));
+        });
 }
 
 export class UsersPromise extends Promise<User[]> {
+    posts: (select: Select<Post>) => PostsPromise = (...args) =>
+        new PostsPromise((resolve, reject) => {
+            this.then((__Users) => resolve(
+                    Promise.all(__Users.flatMap(async (__undefined) => await __undefined.posts())).then(
+                        (__undefineds) => __undefineds.flat()
+                    )
+                )
+            );
+            this.catch((error) => reject(error));
+        });
 }
 
 export class DB {

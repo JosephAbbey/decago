@@ -515,10 +515,72 @@ ${Object.keys(model.schema)
                             )}
 }
 
-export class ${model.name}Promise extends Promise<${model.name}> {
+export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
+                            model.schema
+                        )
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map(
+                                (key) =>
+                                    `\n    ${key} = () => 
+        new ${model.schema[key].name}Promise((resolve, reject) => {
+            this.then((__${model.schema[key].name}) => resolve(__${model.schema[key].name}.${key}()));
+            this.catch((error) => reject(error));
+        });`
+                            )}${Object.keys(model.schema)
+                            .filter(
+                                (key) => model.schema[key] instanceof f.List
+                            )
+                            .map(
+                                (key) =>
+                                    `\n    ${key}: (select: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
+        new ${model.schema[key].of.name}sPromise((resolve, reject) => {
+            this.then((__${model.schema[key].of.name}) => resolve(__${model.schema[key].of.name}.${key}(...args)));
+            this.catch((error) => reject(error));
+        });`
+                            )}
 }
 
-export class ${model.name}sPromise extends Promise<${model.name}[]> {
+export class ${model.name}sPromise extends Promise<${
+                            model.name
+                        }[]> {${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map(
+                                (key) =>
+                                    `\n    ${key} = () => 
+        new ${model.schema[key].name}sPromise((resolve, reject) => {
+            this.then((__${model.name}s) => resolve(
+                    Promise.all(__${model.name}s.flatMap((__${model.schema[key].name}) => __${model.schema[key].name}.${key}())).then(
+                        (__${model.schema[key].name}s) => __${model.schema[key].name}s.flat()
+                    )
+                )
+            );
+            this.catch((error) => reject(error));
+        });`
+                            )}${Object.keys(model.schema)
+                            .filter(
+                                (key) => model.schema[key] instanceof f.List
+                            )
+                            .map(
+                                (key) =>
+                                    `\n    ${key}: (select: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
+        new ${model.schema[key].of.name}sPromise((resolve, reject) => {
+            this.then((__${model.name}s) => resolve(
+                    Promise.all(__${model.name}s.flatMap(async (__${model.schema[key].name}) => await __${model.schema[key].name}.${key}())).then(
+                        (__${model.schema[key].name}s) => __${model.schema[key].name}s.flat()
+                    )
+                )
+            );
+            this.catch((error) => reject(error));
+        });`
+                            )}
 }
 
 `;
