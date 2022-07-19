@@ -58,7 +58,7 @@ module.exports = function main() {
                             if (value.name === 'autoincremental')
                                 return 'AUTOINCREMENT';
                             if (value.name === 'now')
-                                return `DEFAULT CURRENT_TIMESTAMP`;
+                                return 'DEFAULT CURRENT_TIMESTAMP';
                             throw new Error(
                                 `${value.name} is not a supported function`
                             );
@@ -69,7 +69,7 @@ module.exports = function main() {
                             if (type === 'boolean')
                                 return value ? 'DEFAULT 1' : 'DEFAULT 0';
                             if (type === 'date')
-                                return `'DEFAULT ${value.toISOString()}'`;
+                                return `'DEFAULT ${value.getTime()}'`;
                             throw new Error(`${type} is not supported`);
                         }
                     }
@@ -127,11 +127,11 @@ module.exports = function main() {
                             } else {
                                 sql += `    ${field} ${
                                     sqlite[fieldSchema.type]
-                                }${fieldSchema._nullable ? '' : ' NOT NULL'}${
-                                    fieldSchema._id ? ' PRIMARY KEY' : ''
-                                }${
+                                }${fieldSchema._id ? ' PRIMARY KEY' : ''}${
                                     fieldSchema._default === undefined
-                                        ? ''
+                                        ? fieldSchema._nullable
+                                            ? ''
+                                            : ' NOT NULL'
                                         : ' ' +
                                           serializeSqliteDefault(
                                               fieldSchema._default,
@@ -145,11 +145,10 @@ module.exports = function main() {
                         sql += `\n);\n\n`;
                     }
                     sql = sql.slice(0, -1);
-                    console.log(
-                        'sql:',
-                        highlight('\n' + sql, { language: 'sql' }),
-                        '\n'
-                    );
+
+                    console.log('sql:');
+                    console.log(highlight(sql, { language: 'sql' }));
+                    console.log();
 
                     writeFileSync(resolve(source, '../init.sql'), sql);
 
@@ -204,8 +203,6 @@ const doSelect = <T>(select: Select<T> | undefined) => [
 
 `;
 
-                    //TODO: add model classes and promises and db class
-
                     for (const m in data) {
                         const model = data[m];
                         if (!(model instanceof f.Model)) continue;
@@ -222,7 +219,12 @@ const doSelect = <T>(select: Select<T> | undefined) => [
             )
             .map(
                 (key) =>
-                    `,\n        _${key}: ${typescript[model.schema[key].type]}`
+                    `,\n        _${key}: ${typescript[model.schema[key].type]}${
+                        model.schema[key]._nullable ||
+                        model.schema[key]._default
+                            ? ' | undefined'
+                            : ''
+                    }`
             )
             .join('')}${Object.keys(model.schema)
                             .filter(
@@ -250,7 +252,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                             })
                             .join('')}
     ) {
-        return new ${model.name}Promise((resolve, reject) => db.run(
+        return new ${model.name}Promise((resolve, reject) => db.get(
             'INSERT INTO ${model.name} (${Object.keys(model.schema)
                             .filter(
                                 (key) =>
@@ -284,7 +286,9 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                 (key) => !(model.schema[key] instanceof f.List)
                             )
                             .map(() => '?')
-                            .join(', ')})',
+                            .join(', ')}); SELECT * FROM ${
+                            model.name
+                        } WHERE id = (SELECT last_insert_rowid())',
             [${Object.keys(model.schema)
                 .filter(
                     (key) =>
@@ -314,7 +318,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                 )}`;
                             })
                             .join('')}],
-            (error) => error ? reject(error) : resolve(new ${
+            (error, row) => error ? reject(error) : resolve(new ${
                 model.name
             }(db${Object.keys(model.schema)
                             .filter(
@@ -326,7 +330,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                             f.ModelPromise
                                     )
                             )
-                            .map((key) => `, _${key}`)
+                            .map((key) => `, row.${key}`)
                             .join('')}${Object.keys(model.schema)
                             .filter(
                                 (key) =>
@@ -341,7 +345,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                         data[model.schema[key].name].schema
                                     ).findIndex((value) => value._id)
                                 ];
-                                return `, _${key}${capitalizeFirstLetter(
+                                return `, row.${key}${capitalizeFirstLetter(
                                     identifier_name
                                 )}`;
                             })
@@ -736,7 +740,7 @@ export class ${model.name}sPromise extends Promise<${
                     }
 
                     generated += `export class DB {
-    private db: sqlite.Database = new sqlite.Database('${source}');
+    public db: sqlite.Database = new sqlite.Database('${source}');
 ${Object.keys(data)
     .filter((key) => key !== 'default')
     .map((key) => {
@@ -805,9 +809,9 @@ ${Object.keys(data)
 }`;
 
                     generated += '\n\nexport default new DB();\n';
+                    console.log('ts:');
                     console.log(
-                        'ts:',
-                        highlight('\n' + generated, { language: 'typescript' })
+                        highlight(generated, { language: 'typescript' })
                     );
 
                     writeFileSync('./db/generated/index.ts', generated);

@@ -46,18 +46,39 @@ const doSelect = <T>(select: Select<T> | undefined) => [
 export class Post {
     static create(
         db: sqlite.Database,
-        _id: number,
+        _id: number | undefined,
         _title: string,
         _content: string,
-        _createdAt: Date,
-        _updatedAt: Date,
+        _createdAt: Date | undefined,
+        _updatedAt: Date | undefined,
         _authorId: number
     ) {
-        return new PostPromise((resolve, reject) => db.run(
-            'INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?)',
-            [_id, _title, _content, _createdAt, _updatedAt, _authorId],
-            (error) => error ? reject(error) : resolve(new Post(db, _id, _title, _content, _createdAt, _updatedAt, _authorId))
-        ));
+        return new PostPromise((resolve, reject) =>
+            db.run(
+                'INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?)',
+                [_id, _title, _content, _createdAt, _updatedAt, _authorId],
+                (error) =>
+                    error
+                        ? reject(error)
+                        : db.get(
+                              'SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())',
+                              (error, row) =>
+                                  error
+                                      ? reject(error)
+                                      : resolve(
+                                            new Post(
+                                                db,
+                                                row.id,
+                                                row.title,
+                                                row.content,
+                                                row.createdAt,
+                                                row.updatedAt,
+                                                row.authorId
+                                            )
+                                        )
+                          )
+            )
+        );
     }
 
     constructor(
@@ -167,15 +188,32 @@ export class PostsPromise extends Promise<Post[]> {
 export class User {
     static create(
         db: sqlite.Database,
-        _id: number,
+        _id: number | undefined,
         _name: string,
-        _createdAt: Date,
-        _updatedAt: Date
+        _createdAt: Date | undefined,
+        _updatedAt: Date | undefined
     ) {
         return new UserPromise((resolve, reject) => db.run(
             'INSERT INTO User (id, name, createdAt, updatedAt) VALUES (?, ?, ?, ?)',
             [_id, _name, _createdAt, _updatedAt],
-            (error) => error ? reject(error) : resolve(new User(db, _id, _name, _createdAt, _updatedAt))
+            (error) =>
+                error
+                    ? reject(error)
+                    : db.get(
+                          'SELECT * FROM User WHERE id = (SELECT last_insert_rowid())',
+                          (error, row) =>
+                              error 
+                                  ? reject(error)
+                                  : resolve(
+                                        new User(
+                                            db, 
+                                            row.id, 
+                                            row.name, 
+                                            row.createdAt, 
+                                            row.updatedAt
+                                        )
+                                    )
+                      )
         ));
     }
 
@@ -275,7 +313,7 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    private db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
     Posts = (select: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(
