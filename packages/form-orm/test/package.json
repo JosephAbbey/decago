@@ -1,5 +1,11 @@
 {
     "name": "form-orm.test",
+    "main": "./dist/src/index.js",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "start": "node ./dist/src/index.js",
+        "test": "npm run build & npm start"
+    },
     "dependencies": {
         "form-orm": "file:../"
     },

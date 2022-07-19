@@ -21,7 +21,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               .map(
                   (key) =>
                       `${key} = ${
-                          //@ts-expect-error
+                          //@ts-ignore
                           select.where[key]
                       }`
               )
@@ -35,7 +35,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               .map(
                   (key) =>
                       `${key} ${
-                          //@ts-expect-error
+                          //@ts-ignore
                           select.orderBy[key]
                       }`
               )
@@ -57,7 +57,15 @@ export class Post {
             'INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?)',
             [_id, _title, _content, _createdAt, _updatedAt, _authorId]
         );
-        return new Post(db, _id, _title, _content, _createdAt, _updatedAt, _authorId);
+        return new Post(
+            db,
+            _id,
+            _title,
+            _content,
+            _createdAt,
+            _updatedAt,
+            _authorId
+        );
     }
 
     constructor(
@@ -69,7 +77,7 @@ export class Post {
         private _updatedAt: Date,
         private _authorId: number
     ) {}
-    
+
     get id(): number {
         return this._id;
     }
@@ -91,7 +99,11 @@ export class Post {
     }
     set content(value: string) {
         this._content = value;
-        this.db.run('UPDATE Post SET content = ? WHERE id = ?', value, this._id);
+        this.db.run(
+            'UPDATE Post SET content = ? WHERE id = ?',
+            value,
+            this._id
+        );
     }
 
     get createdAt(): Date {
@@ -99,7 +111,11 @@ export class Post {
     }
     set createdAt(value: Date) {
         this._createdAt = value;
-        this.db.run('UPDATE Post SET createdAt = ? WHERE id = ?', value, this._id);
+        this.db.run(
+            'UPDATE Post SET createdAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
     }
 
     get updatedAt(): Date {
@@ -107,7 +123,11 @@ export class Post {
     }
     set updatedAt(value: Date) {
         this._updatedAt = value;
-        this.db.run('UPDATE Post SET updatedAt = ? WHERE id = ?', value, this._id);
+        this.db.run(
+            'UPDATE Post SET updatedAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
     }
 
     get authorId(): number {
@@ -115,7 +135,11 @@ export class Post {
     }
     set authorId(value: number) {
         this._authorId = value;
-        this.db.run('UPDATE Post SET authorId = ? WHERE id = ?', value, this._id);
+        this.db.run(
+            'UPDATE Post SET authorId = ? WHERE id = ?',
+            value,
+            this._id
+        );
     }
 
     author = () =>
@@ -143,7 +167,7 @@ export class Post {
 }
 
 export class PostPromise extends Promise<Post> {
-    author = () => 
+    author = () =>
         new UserPromise((resolve, reject) => {
             this.then((__User) => resolve(__User.author()));
             this.catch((error) => reject(error));
@@ -151,13 +175,13 @@ export class PostPromise extends Promise<Post> {
 }
 
 export class PostsPromise extends Promise<Post[]> {
-    author = () => 
+    author = () =>
         new UsersPromise((resolve, reject) => {
             this.then((__Posts) =>
                 resolve(
-                    Promise.all(__Posts.flatMap((__User) => __User.author())).then(
-                        (__Users) => __Users.flat()
-                    )
+                    Promise.all(
+                        __Posts.flatMap((__User) => __User.author())
+                    ).then((__Users) => __Users.flat())
                 )
             );
             this.catch((error) => reject(error));
@@ -186,7 +210,7 @@ export class User {
         private _createdAt: Date,
         private _updatedAt: Date
     ) {}
-    
+
     get id(): number {
         return this._id;
     }
@@ -208,7 +232,11 @@ export class User {
     }
     set createdAt(value: Date) {
         this._createdAt = value;
-        this.db.run('UPDATE User SET createdAt = ? WHERE id = ?', value, this._id);
+        this.db.run(
+            'UPDATE User SET createdAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
     }
 
     get updatedAt(): Date {
@@ -216,7 +244,11 @@ export class User {
     }
     set updatedAt(value: Date) {
         this._updatedAt = value;
-        this.db.run('UPDATE User SET updatedAt = ? WHERE id = ?', value, this._id);
+        this.db.run(
+            'UPDATE User SET updatedAt = ? WHERE id = ?',
+            value,
+            this._id
+        );
     }
 
     posts = (select?: Select<Post>) => {
@@ -265,9 +297,11 @@ export class UsersPromise extends Promise<User[]> {
         new PostsPromise((resolve, reject) => {
             this.then((__Users) =>
                 resolve(
-                    Promise.all(__Users.flatMap(async (__Post) => await __Post.posts(...args))).then(
-                        (__Posts) => __Posts.flat()
-                    )
+                    Promise.all(
+                        __Users.flatMap(
+                            async (__Post) => await __Post.posts(...args)
+                        )
+                    ).then((__Posts) => __Posts.flat())
                 )
             );
             this.catch((error) => reject(error));
@@ -275,7 +309,9 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    private db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    private db: sqlite.Database = new sqlite.Database(
+        'C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite'
+    );
     Posts = (select: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(
