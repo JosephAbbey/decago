@@ -21,7 +21,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               .map(
                   (key) =>
                       `${key} = ${
-                          //@ts-expect-error
+                          //@ts-ignore
                           select.where[key]
                       }`
               )
@@ -35,7 +35,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               .map(
                   (key) =>
                       `${key} ${
-                          //@ts-expect-error
+                          //@ts-ignore
                           select.orderBy[key]
                       }`
               )
@@ -53,11 +53,11 @@ export class Post {
         _updatedAt: Date,
         _authorId: number
     ) {
-        db.run(
+        return new PostPromise((resolve, reject) => db.run(
             'INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?)',
-            [_id, _title, _content, _createdAt, _updatedAt, _authorId]
-        );
-        return new Post(db, _id, _title, _content, _createdAt, _updatedAt, _authorId);
+            [_id, _title, _content, _createdAt, _updatedAt, _authorId],
+            (error) => error ? reject(error) : resolve(new Post(db, _id, _title, _content, _createdAt, _updatedAt, _authorId))
+        ));
     }
 
     constructor(
@@ -172,11 +172,11 @@ export class User {
         _createdAt: Date,
         _updatedAt: Date
     ) {
-        db.run(
+        return new UserPromise((resolve, reject) => db.run(
             'INSERT INTO User (id, name, createdAt, updatedAt) VALUES (?, ?, ?, ?)',
-            [_id, _name, _createdAt, _updatedAt]
-        );
-        return new User(db, _id, _name, _createdAt, _updatedAt);
+            [_id, _name, _createdAt, _updatedAt],
+            (error) => error ? reject(error) : resolve(new User(db, _id, _name, _createdAt, _updatedAt))
+        ));
     }
 
     constructor(

@@ -180,7 +180,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               .map(
                   (key) =>
                       \`\${key} = \${
-                          //@ts-expect-error
+                          //@ts-ignore
                           select.where[key]
                       }\`
               )
@@ -194,7 +194,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               .map(
                   (key) =>
                       \`\${key} \${
-                          //@ts-expect-error
+                          //@ts-ignore
                           select.orderBy[key]
                       }\`
               )
@@ -250,7 +250,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                             })
                             .join('')}
     ) {
-        db.run(
+        return new ${model.name}Promise((resolve, reject) => db.run(
             'INSERT INTO ${model.name} (${Object.keys(model.schema)
                             .filter(
                                 (key) =>
@@ -313,9 +313,10 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                     identifier_name
                                 )}`;
                             })
-                            .join('')}]
-        );
-        return new ${model.name}(db${Object.keys(model.schema)
+                            .join('')}],
+            (error) => error ? reject(error) : resolve(new ${
+                model.name
+            }(db${Object.keys(model.schema)
                             .filter(
                                 (key) =>
                                     !(
@@ -344,7 +345,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                     identifier_name
                                 )}`;
                             })
-                            .join('')});
+                            .join('')}))
+        ));
     }
 
     constructor(
