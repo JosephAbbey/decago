@@ -24,5 +24,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const generated_1 = __importStar(require("../db/generated"));
-console.log(generated_1.default);
-generated_1.User.create(generated_1.default.db, undefined, 'John Doe', undefined, undefined);
+(async () => {
+    console.log(generated_1.default);
+    const user1 = await generated_1.User.create(generated_1.default.db, undefined, 'John Doe', undefined, undefined);
+    const post1 = await generated_1.Post.create(generated_1.default.db, undefined, 'Post 1', 'This is a post.', undefined, undefined, user1.id);
+    console.log(await post1.author());
+    console.log(await user1.posts());
+})();

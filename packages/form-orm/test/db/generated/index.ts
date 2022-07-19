@@ -53,11 +53,32 @@ export class Post {
         _updatedAt: Date | undefined,
         _authorId: number
     ) {
-        return new PostPromise((resolve, reject) => db.get(
-            'INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?); SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())',
-            [_id, _title, _content, _createdAt, _updatedAt, _authorId],
-            (error, row) => error ? reject(error) : resolve(new Post(db, row.id, row.title, row.content, row.createdAt, row.updatedAt, row.authorId))
-        ));
+        return new PostPromise((resolve, reject) =>
+            db.run(
+                `INSERT INTO Post (${["id", "title", "content", "createdAt", "updatedAt", "authorId"].filter((_, i) => Boolean([_id, _title, _content, _createdAt, _updatedAt, _authorId][i])).join(', ')}) VALUES (${["id", "title", "content", "createdAt", "updatedAt", "authorId"].filter((_, i) => Boolean([_id, _title, _content, _createdAt, _updatedAt, _authorId][i])).map(() => "?").join(', ')})`,
+                [_id, _title, _content, _createdAt, _updatedAt, _authorId].filter((v) => Boolean(v)),
+                (error) =>
+                    error
+                        ? reject(error)
+                        : db.get(
+                              'SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())', 
+                              (error, row) => 
+                                  error 
+                                      ? reject(error)
+                                      : resolve(
+                                            new Post(
+                                                db,
+                                                row.id,
+                                                row.title,
+                                                row.content,
+                                                row.createdAt,
+                                                row.updatedAt,
+                                                row.authorId
+                                            )
+                                        )
+                          )
+            )
+        );
     }
 
     constructor(
@@ -172,11 +193,30 @@ export class User {
         _createdAt: Date | undefined,
         _updatedAt: Date | undefined
     ) {
-        return new UserPromise((resolve, reject) => db.get(
-            'INSERT INTO User (id, name, createdAt, updatedAt) VALUES (?, ?, ?, ?); SELECT * FROM User WHERE id = (SELECT last_insert_rowid())',
-            [_id, _name, _createdAt, _updatedAt],
-            (error, row) => error ? reject(error) : resolve(new User(db, row.id, row.name, row.createdAt, row.updatedAt))
-        ));
+        return new UserPromise((resolve, reject) =>
+            db.run(
+                `INSERT INTO User (${["id", "name", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _createdAt, _updatedAt][i])).join(', ')}) VALUES (${["id", "name", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _createdAt, _updatedAt][i])).map(() => "?").join(', ')})`,
+                [_id, _name, _createdAt, _updatedAt].filter((v) => Boolean(v)),
+                (error) =>
+                    error
+                        ? reject(error)
+                        : db.get(
+                              'SELECT * FROM User WHERE id = (SELECT last_insert_rowid())', 
+                              (error, row) => 
+                                  error 
+                                      ? reject(error)
+                                      : resolve(
+                                            new User(
+                                                db,
+                                                row.id,
+                                                row.name,
+                                                row.createdAt,
+                                                row.updatedAt
+                                            )
+                                        )
+                          )
+            )
+        );
     }
 
     constructor(
@@ -253,7 +293,7 @@ export class User {
 }
 
 export class UserPromise extends Promise<User> {
-    posts: (select: Select<Post>) => PostsPromise = (...args) =>
+    posts: (select?: Select<Post>) => PostsPromise = (...args) =>
         new PostsPromise((resolve, reject) => {
             this.then((__Post) => resolve(__Post.posts(...args)));
             this.catch((error) => reject(error));
@@ -261,7 +301,7 @@ export class UserPromise extends Promise<User> {
 }
 
 export class UsersPromise extends Promise<User[]> {
-    posts: (select: Select<Post>) => PostsPromise = (...args) =>
+    posts: (select?: Select<Post>) => PostsPromise = (...args) =>
         new PostsPromise((resolve, reject) => {
             this.then((__Users) =>
                 resolve(
@@ -276,7 +316,7 @@ export class UsersPromise extends Promise<User[]> {
 
 export class DB {
     public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
-    Posts = (select: Select<Post>) =>
+    Posts = (select?: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(
                 `SELECT * FROM Post ? ? ? ?`,
@@ -303,7 +343,7 @@ export class DB {
                 }
             );
         });
-    Users = (select: Select<User>) =>
+    Users = (select?: Select<User>) =>
         new UsersPromise((resolve, reject) => {
             this.db.all(
                 `SELECT * FROM User ? ? ? ?`,

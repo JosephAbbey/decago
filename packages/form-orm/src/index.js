@@ -127,11 +127,11 @@ module.exports = function main() {
                             } else {
                                 sql += `    ${field} ${
                                     sqlite[fieldSchema.type]
+                                }${fieldSchema._nullable ? '' : ' NOT NULL'}${
+                                    fieldSchema._unique ? '' : ' UNIQUE'
                                 }${fieldSchema._id ? ' PRIMARY KEY' : ''}${
                                     fieldSchema._default === undefined
-                                        ? fieldSchema._nullable
-                                            ? ''
-                                            : ' NOT NULL'
+                                        ? ''
                                         : ' ' +
                                           serializeSqliteDefault(
                                               fieldSchema._default,
@@ -252,8 +252,9 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                             })
                             .join('')}
     ) {
-        return new ${model.name}Promise((resolve, reject) => db.get(
-            'INSERT INTO ${model.name} (${Object.keys(model.schema)
+        return new ${model.name}Promise((resolve, reject) =>
+            db.run(
+                \`INSERT INTO ${model.name} (\${[${Object.keys(model.schema)
                             .filter(
                                 (key) =>
                                     !(
@@ -263,6 +264,7 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                             f.ModelPromise
                                     )
                             )
+                            .map((key) => `"${key}"`)
                             .join(', ')}${Object.keys(model.schema)
                             .filter(
                                 (key) =>
@@ -277,29 +279,24 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                         data[model.schema[key].name].schema
                                     ).findIndex((value) => value._id)
                                 ];
-                                return `, ${key}${capitalizeFirstLetter(
+                                return `, "${key}${capitalizeFirstLetter(
                                     identifier_name
-                                )}`;
+                                )}"`;
                             })
-                            .join('')}) VALUES (${Object.keys(model.schema)
-                            .filter(
-                                (key) => !(model.schema[key] instanceof f.List)
-                            )
-                            .map(() => '?')
-                            .join(', ')}); SELECT * FROM ${
-                            model.name
-                        } WHERE id = (SELECT last_insert_rowid())',
-            [${Object.keys(model.schema)
-                .filter(
-                    (key) =>
-                        !(
-                            model.schema[key] instanceof f.List ||
-                            model.schema[key] instanceof f.Model ||
-                            model.schema[key] instanceof f.ModelPromise
+                            .join('')}].filter((_, i) => Boolean([${Object.keys(
+                            model.schema
                         )
-                )
-                .map((key) => `_${key}`)
-                .join(', ')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    !(
+                                        model.schema[key] instanceof f.List ||
+                                        model.schema[key] instanceof f.Model ||
+                                        model.schema[key] instanceof
+                                            f.ModelPromise
+                                    )
+                            )
+                            .map((key) => `_${key}`)
+                            .join(', ')}${Object.keys(model.schema)
                             .filter(
                                 (key) =>
                                     model.schema[key] instanceof f.Model ||
@@ -317,10 +314,11 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                     identifier_name
                                 )}`;
                             })
-                            .join('')}],
-            (error, row) => error ? reject(error) : resolve(new ${
-                model.name
-            }(db${Object.keys(model.schema)
+                            .join(
+                                ''
+                            )}][i])).join(', ')}) VALUES (\${[${Object.keys(
+                            model.schema
+                        )
                             .filter(
                                 (key) =>
                                     !(
@@ -330,8 +328,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                             f.ModelPromise
                                     )
                             )
-                            .map((key) => `, row.${key}`)
-                            .join('')}${Object.keys(model.schema)
+                            .map((key) => `"${key}"`)
+                            .join(', ')}${Object.keys(model.schema)
                             .filter(
                                 (key) =>
                                     model.schema[key] instanceof f.Model ||
@@ -345,12 +343,131 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                         data[model.schema[key].name].schema
                                     ).findIndex((value) => value._id)
                                 ];
-                                return `, row.${key}${capitalizeFirstLetter(
+                                return `, "${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}"`;
+                            })
+                            .join('')}].filter((_, i) => Boolean([${Object.keys(
+                            model.schema
+                        )
+                            .filter(
+                                (key) =>
+                                    !(
+                                        model.schema[key] instanceof f.List ||
+                                        model.schema[key] instanceof f.Model ||
+                                        model.schema[key] instanceof
+                                            f.ModelPromise
+                                    )
+                            )
+                            .map((key) => `_${key}`)
+                            .join(', ')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `, _${key}${capitalizeFirstLetter(
                                     identifier_name
                                 )}`;
                             })
-                            .join('')}))
-        ));
+                            .join('')}][i])).map(() => "?").join(', ')})\`,
+                [${Object.keys(model.schema)
+                    .filter(
+                        (key) =>
+                            !(
+                                model.schema[key] instanceof f.List ||
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                            )
+                    )
+                    .map((key) => `_${key}`)
+                    .join(', ')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `, _${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}`;
+                            })
+                            .join('')}].filter((v) => Boolean(v)),
+                (error) =>
+                    error
+                        ? reject(error)
+                        : db.get(
+                              'SELECT * FROM ${
+                                  model.name
+                              } WHERE id = (SELECT last_insert_rowid())', 
+                              (error, row) => 
+                                  error 
+                                      ? reject(error)
+                                      : resolve(
+                                            new ${model.name}(
+                                                db${Object.keys(model.schema)
+                                                    .filter(
+                                                        (key) =>
+                                                            !(
+                                                                model.schema[
+                                                                    key
+                                                                ] instanceof
+                                                                    f.List ||
+                                                                model.schema[
+                                                                    key
+                                                                ] instanceof
+                                                                    f.Model ||
+                                                                model.schema[
+                                                                    key
+                                                                ] instanceof
+                                                                    f.ModelPromise
+                                                            )
+                                                    )
+                                                    .map(
+                                                        (key) =>
+                                                            `,\n                                                row.${key}`
+                                                    )
+                                                    .join('')}${Object.keys(
+                            model.schema
+                        )
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `,\n                                                row.${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}`;
+                            })
+                            .join('')}
+                                            )
+                                        )
+                          )
+            )
+        );
     }
 
     constructor(
@@ -687,7 +804,7 @@ export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
                             )
                             .map(
                                 (key) =>
-                                    `\n    ${key}: (select: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
+                                    `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
         new ${model.schema[key].of.name}sPromise((resolve, reject) => {
             this.then((__${model.schema[key].of.name}) => resolve(__${model.schema[key].of.name}.${key}(...args)));
             this.catch((error) => reject(error));
@@ -722,7 +839,7 @@ export class ${model.name}sPromise extends Promise<${
                             )
                             .map(
                                 (key) =>
-                                    `\n    ${key}: (select: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
+                                    `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
         new ${model.schema[key].of.name}sPromise((resolve, reject) => {
             this.then((__${model.name}s) =>
                 resolve(
@@ -744,7 +861,7 @@ export class ${model.name}sPromise extends Promise<${
 ${Object.keys(data)
     .filter((key) => key !== 'default')
     .map((key) => {
-        return `    ${key}s = (select: Select<${key}>) =>
+        return `    ${key}s = (select?: Select<${key}>) =>
         new ${key}sPromise((resolve, reject) => {
             this.db.all(
                 \`SELECT * FROM ${key} ? ? ? ?\`,

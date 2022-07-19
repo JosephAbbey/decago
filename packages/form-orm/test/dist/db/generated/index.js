@@ -33,7 +33,11 @@ class Post {
     _updatedAt;
     _authorId;
     static create(db, _id, _title, _content, _createdAt, _updatedAt, _authorId) {
-        return new PostPromise((resolve, reject) => db.get('INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?); SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())', [_id, _title, _content, _createdAt, _updatedAt, _authorId], (error, row) => error ? reject(error) : resolve(new Post(db, row.id, row.title, row.content, row.createdAt, row.updatedAt, row.authorId))));
+        return new PostPromise((resolve, reject) => db.run(`INSERT INTO Post (${["id", "title", "content", "createdAt", "updatedAt", "authorId"].filter((_, i) => Boolean([_id, _title, _content, _createdAt, _updatedAt, _authorId][i])).join(', ')}) VALUES (${["id", "title", "content", "createdAt", "updatedAt", "authorId"].filter((_, i) => Boolean([_id, _title, _content, _createdAt, _updatedAt, _authorId][i])).map(() => "?").join(', ')})`, [_id, _title, _content, _createdAt, _updatedAt, _authorId].filter((v) => Boolean(v)), (error) => error
+            ? reject(error)
+            : db.get('SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())', (error, row) => error
+                ? reject(error)
+                : resolve(new Post(db, row.id, row.title, row.content, row.createdAt, row.updatedAt, row.authorId)))));
     }
     constructor(db, _id, _title, _content, _createdAt, _updatedAt, _authorId) {
         this.db = db;
@@ -117,7 +121,11 @@ class User {
     _createdAt;
     _updatedAt;
     static create(db, _id, _name, _createdAt, _updatedAt) {
-        return new UserPromise((resolve, reject) => db.get('INSERT INTO User (id, name, createdAt, updatedAt) VALUES (?, ?, ?, ?); SELECT * FROM User WHERE id = (SELECT last_insert_rowid())', [_id, _name, _createdAt, _updatedAt], (error, row) => error ? reject(error) : resolve(new User(db, row.id, row.name, row.createdAt, row.updatedAt))));
+        return new UserPromise((resolve, reject) => db.run(`INSERT INTO User (${["id", "name", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _createdAt, _updatedAt][i])).join(', ')}) VALUES (${["id", "name", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _createdAt, _updatedAt][i])).map(() => "?").join(', ')})`, [_id, _name, _createdAt, _updatedAt].filter((v) => Boolean(v)), (error) => error
+            ? reject(error)
+            : db.get('SELECT * FROM User WHERE id = (SELECT last_insert_rowid())', (error, row) => error
+                ? reject(error)
+                : resolve(new User(db, row.id, row.name, row.createdAt, row.updatedAt)))));
     }
     constructor(db, _id, _name, _createdAt, _updatedAt) {
         this.db = db;

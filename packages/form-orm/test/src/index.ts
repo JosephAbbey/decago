@@ -1,5 +1,26 @@
-import db, { User } from '../db/generated';
+import db, { Post, User } from '../db/generated';
 
-console.log(db);
+(async () => {
+    console.log(db);
 
-User.create(db.db, undefined, 'John Doe', undefined, undefined);
+    const user1 = await User.create(
+        db.db,
+        undefined,
+        'John Doe',
+        undefined,
+        undefined
+    );
+
+    const post1 = await Post.create(
+        db.db,
+        undefined,
+        'Post 1',
+        'This is a post.',
+        undefined,
+        undefined,
+        user1.id
+    );
+
+    console.log(await post1.author());
+    console.log(await user1.posts());
+})();
