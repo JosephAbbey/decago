@@ -44,6 +44,22 @@ const doSelect = <T>(select: Select<T> | undefined) => [
 ];
 
 export class Post {
+    static create(
+        db: sqlite.Database,
+        _id: number,
+        _title: string,
+        _content: string,
+        _createdAt: Date,
+        _updatedAt: Date,
+        _authorId: number
+    ) {
+        db.run(
+            'INSERT INTO Post (id, title, content, createdAt, updatedAt, authorId) VALUES (?, ?, ?, ?, ?, ?)',
+            [_id, _title, _content, _createdAt, _updatedAt, _authorId]
+        );
+        return new Post(db, _id, _title, _content, _createdAt, _updatedAt, _authorId);
+    }
+
     constructor(
         private db: sqlite.Database,
         private _id: number,
@@ -137,7 +153,8 @@ export class PostPromise extends Promise<Post> {
 export class PostsPromise extends Promise<Post[]> {
     author = () => 
         new UsersPromise((resolve, reject) => {
-            this.then((__Posts) => resolve(
+            this.then((__Posts) =>
+                resolve(
                     Promise.all(__Posts.flatMap((__User) => __User.author())).then(
                         (__Users) => __Users.flat()
                     )
@@ -148,6 +165,20 @@ export class PostsPromise extends Promise<Post[]> {
 }
 
 export class User {
+    static create(
+        db: sqlite.Database,
+        _id: number,
+        _name: string,
+        _createdAt: Date,
+        _updatedAt: Date
+    ) {
+        db.run(
+            'INSERT INTO User (id, name, createdAt, updatedAt) VALUES (?, ?, ?, ?)',
+            [_id, _name, _createdAt, _updatedAt]
+        );
+        return new User(db, _id, _name, _createdAt, _updatedAt);
+    }
+
     constructor(
         private db: sqlite.Database,
         private _id: number,
@@ -234,7 +265,7 @@ export class UsersPromise extends Promise<User[]> {
         new PostsPromise((resolve, reject) => {
             this.then((__Users) =>
                 resolve(
-                    Promise.all(__Users.flatMap(async (__Post) => await __Post.posts())).then(
+                    Promise.all(__Users.flatMap(async (__Post) => await __Post.posts(...args))).then(
                         (__Posts) => __Posts.flat()
                     )
                 )
@@ -244,8 +275,7 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    static db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
-    private db: sqlite.Database = DB.db;
+    private db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
     Posts = (select: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(

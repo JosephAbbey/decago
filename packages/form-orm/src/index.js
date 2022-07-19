@@ -210,6 +210,143 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                         const model = data[m];
                         if (!(model instanceof f.Model)) continue;
                         generated += `export class ${model.name} {
+    static create(
+        db: sqlite.Database${Object.keys(model.schema)
+            .filter(
+                (key) =>
+                    !(
+                        model.schema[key] instanceof f.List ||
+                        model.schema[key] instanceof f.Model ||
+                        model.schema[key] instanceof f.ModelPromise
+                    )
+            )
+            .map(
+                (key) =>
+                    `,\n        _${key}: ${typescript[model.schema[key].type]}`
+            )
+            .join('')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `,\n        _${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}: ${
+                                    typescript[
+                                        data[model.schema[key].name].schema[
+                                            identifier_name
+                                        ].type
+                                    ]
+                                }`;
+                            })
+                            .join('')}
+    ) {
+        db.run(
+            'INSERT INTO ${model.name} (${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    !(
+                                        model.schema[key] instanceof f.List ||
+                                        model.schema[key] instanceof f.Model ||
+                                        model.schema[key] instanceof
+                                            f.ModelPromise
+                                    )
+                            )
+                            .join(', ')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `, ${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}`;
+                            })
+                            .join('')}) VALUES (${Object.keys(model.schema)
+                            .filter(
+                                (key) => !(model.schema[key] instanceof f.List)
+                            )
+                            .map(() => '?')
+                            .join(', ')})',
+            [${Object.keys(model.schema)
+                .filter(
+                    (key) =>
+                        !(
+                            model.schema[key] instanceof f.List ||
+                            model.schema[key] instanceof f.Model ||
+                            model.schema[key] instanceof f.ModelPromise
+                        )
+                )
+                .map((key) => `_${key}`)
+                .join(', ')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `, _${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}`;
+                            })
+                            .join('')}]
+        );
+        return new ${model.name}(db${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    !(
+                                        model.schema[key] instanceof f.List ||
+                                        model.schema[key] instanceof f.Model ||
+                                        model.schema[key] instanceof
+                                            f.ModelPromise
+                                    )
+                            )
+                            .map((key) => `, _${key}`)
+                            .join('')}${Object.keys(model.schema)
+                            .filter(
+                                (key) =>
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                            )
+                            .map((key) => {
+                                const identifier_name = Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ];
+                                return `, _${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}`;
+                            })
+                            .join('')});
+    }
+
     constructor(
         private db: sqlite.Database${Object.keys(model.schema)
             .filter(
@@ -564,7 +701,8 @@ export class ${model.name}sPromise extends Promise<${
                                 (key) =>
                                     `\n    ${key} = () => 
         new ${model.schema[key].name}sPromise((resolve, reject) => {
-            this.then((__${model.name}s) => resolve(
+            this.then((__${model.name}s) =>
+                resolve(
                     Promise.all(__${model.name}s.flatMap((__${model.schema[key].name}) => __${model.schema[key].name}.${key}())).then(
                         (__${model.schema[key].name}s) => __${model.schema[key].name}s.flat()
                     )
@@ -582,7 +720,7 @@ export class ${model.name}sPromise extends Promise<${
         new ${model.schema[key].of.name}sPromise((resolve, reject) => {
             this.then((__${model.name}s) =>
                 resolve(
-                    Promise.all(__${model.name}s.flatMap(async (__${model.schema[key].of.name}) => await __${model.schema[key].of.name}.${key}())).then(
+                    Promise.all(__${model.name}s.flatMap(async (__${model.schema[key].of.name}) => await __${model.schema[key].of.name}.${key}(...args))).then(
                         (__${model.schema[key].of.name}s) => __${model.schema[key].of.name}s.flat()
                     )
                 )
@@ -596,8 +734,7 @@ export class ${model.name}sPromise extends Promise<${
                     }
 
                     generated += `export class DB {
-    static db: sqlite.Database = new sqlite.Database('${source}');
-    private db: sqlite.Database = DB.db;
+    private db: sqlite.Database = new sqlite.Database('${source}');
 ${Object.keys(data)
     .filter((key) => key !== 'default')
     .map((key) => {
