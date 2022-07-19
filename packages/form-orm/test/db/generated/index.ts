@@ -124,7 +124,6 @@ export class Post {
                 }
             )
         );
-
 }
 
 export class PostPromise extends Promise<Post> {
@@ -219,7 +218,7 @@ export class User {
                 }
             );
         });
-    }
+    };
 }
 
 export class UserPromise extends Promise<User> {
@@ -233,9 +232,10 @@ export class UserPromise extends Promise<User> {
 export class UsersPromise extends Promise<User[]> {
     posts: (select: Select<Post>) => PostsPromise = (...args) =>
         new PostsPromise((resolve, reject) => {
-            this.then((__Users) => resolve(
-                    Promise.all(__Users.flatMap(async (__undefined) => await __undefined.posts())).then(
-                        (__undefineds) => __undefineds.flat()
+            this.then((__Users) =>
+                resolve(
+                    Promise.all(__Users.flatMap(async (__Post) => await __Post.posts())).then(
+                        (__Posts) => __Posts.flat()
                     )
                 )
             );
@@ -244,7 +244,8 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    private db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    static db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    private db: sqlite.Database = DB.db;
     Posts = (select: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(

@@ -219,7 +219,7 @@ export class User {
                 }
             );
         });
-    }
+    };
 }
 
 export class UserPromise extends Promise<User> {
@@ -245,7 +245,8 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    private db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    static db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    private db: sqlite.Database = DB.db;
     Posts = (select: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(
