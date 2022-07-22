@@ -13,16 +13,16 @@ const doSelect = (select) => [
             select.where[key]}`)
                 .join(' AND ')
         : '',
-    'SKIP ' + select?.skip || defaultSkip,
-    'TAKE ' + select?.take || defaultTake,
     select?.orderBy
-        ? 'ODER BY ' +
+        ? 'ORDER BY ' +
             Object.keys(select.orderBy)
                 .map((key) => `${key} ${
             //@ts-ignore
             select.orderBy[key]}`)
                 .join(', ')
-        : '',
+        : 'ORDER BY (SELECT NULL)',
+    `LIMIT (${select?.take || defaultTake})`,
+    `OFFSET (${select?.skip || defaultSkip})`,
 ];
 class Post {
     db;
@@ -167,7 +167,7 @@ class User {
         select.where = select.where || {};
         select.where.authorId = this._id;
         return new PostsPromise((resolve, reject) => {
-            this.db.all(`SELECT * FROM Post ? ? ? ?`, doSelect(select), (err, rows) => {
+            this.db.all('SELECT * FROM Post ' + doSelect(select).join(' '), (err, rows) => {
                 if (err) {
                     reject(err);
                 }
@@ -196,7 +196,7 @@ exports.UsersPromise = UsersPromise;
 class DB {
     db = new providers_1.sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
     Posts = (select) => new PostsPromise((resolve, reject) => {
-        this.db.all(`SELECT * FROM Post ? ? ? ?`, doSelect(select), (err, rows) => {
+        this.db.all('SELECT * FROM Post ' + doSelect(select).join(' '), (err, rows) => {
             if (err) {
                 reject(err);
             }
@@ -206,7 +206,7 @@ class DB {
         });
     });
     Users = (select) => new UsersPromise((resolve, reject) => {
-        this.db.all(`SELECT * FROM User ? ? ? ?`, doSelect(select), (err, rows) => {
+        this.db.all('SELECT * FROM User ' + doSelect(select).join(' '), (err, rows) => {
             if (err) {
                 reject(err);
             }

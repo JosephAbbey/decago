@@ -185,10 +185,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               )
               .join(' AND ')
         : '',
-    'SKIP ' + select?.skip || defaultSkip,
-    'TAKE ' + select?.take || defaultTake,
     select?.orderBy
-        ? 'ODER BY ' +
+        ? 'ORDER BY ' +
           Object.keys(select.orderBy)
               .map(
                   (key) =>
@@ -198,7 +196,9 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                       }\`
               )
               .join(', ')
-        : '',
+        : 'ORDER BY (SELECT NULL)',
+    \`LIMIT (\${select?.take || defaultTake})\`,
+    \`OFFSET (\${select?.skip || defaultSkip})\`,
 ];
 
 `;
@@ -697,8 +697,9 @@ ${Object.keys(model.schema)
         select.where.authorId = this._id;
         return new ${model.schema[key].of.name}sPromise((resolve, reject) => {
             this.db.all(
-                \`SELECT * FROM ${model.schema[key].of.name} ? ? ? ?\`,
-                doSelect(select),
+                'SELECT * FROM ${
+                    model.schema[key].of.name
+                } ' + doSelect(select).join(' '),
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -864,8 +865,7 @@ ${Object.keys(data)
         return `    ${key}s = (select?: Select<${key}>) =>
         new ${key}sPromise((resolve, reject) => {
             this.db.all(
-                \`SELECT * FROM ${key} ? ? ? ?\`,
-                doSelect(select),
+                'SELECT * FROM ${key} ' + doSelect(select).join(' '),
                 (err, rows) => {
                     if (err) {
                         reject(err);

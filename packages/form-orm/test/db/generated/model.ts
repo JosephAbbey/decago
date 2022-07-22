@@ -27,10 +27,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
               )
               .join(' AND ')
         : '',
-    'SKIP ' + select?.skip || defaultSkip,
-    'TAKE ' + select?.take || defaultTake,
     select?.orderBy
-        ? 'ODER BY ' +
+        ? 'ORDER BY ' +
           Object.keys(select.orderBy)
               .map(
                   (key) =>
@@ -40,7 +38,9 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                       }`
               )
               .join(', ')
-        : '',
+        : 'ORDER BY (SELECT NULL)',
+    `LIMIT (${select?.take || defaultTake})`,
+    `OFFSET (${select?.skip || defaultSkip})`,
 ];
 
 export class Post {
@@ -203,17 +203,17 @@ export class User {
                         : db.get(
                               'SELECT * FROM User WHERE id = (SELECT last_insert_rowid())',
                               (error, row) =>
-                                  error 
+                                  error
                                       ? reject(error)
                                       : resolve(
-                                                new User(
-                                                    db, 
-                                                    row.id, 
-                                                    row.name, 
-                                                    row.createdAt, 
-                                                    row.updatedAt
-                                                )
+                                            new User(
+                                                db,
+                                                row.id,
+                                                row.name,
+                                                row.createdAt,
+                                                row.updatedAt
                                             )
+                                        )
                           )
             )
         );
@@ -265,8 +265,7 @@ export class User {
         select.where.authorId = this._id;
         return new PostsPromise((resolve, reject) => {
             this.db.all(
-                `SELECT * FROM Post ? ? ? ?`,
-                doSelect(select),
+                'SELECT * FROM Post ' + doSelect(select).join(' '),
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -319,8 +318,7 @@ export class DB {
     Posts = (select?: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(
-                `SELECT * FROM Post ? ? ? ?`,
-                doSelect(select),
+                'SELECT * FROM Post ' + doSelect(select).join(' '),
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -346,8 +344,7 @@ export class DB {
     Users = (select?: Select<User>) =>
         new UsersPromise((resolve, reject) => {
             this.db.all(
-                `SELECT * FROM User ? ? ? ?`,
-                doSelect(select),
+                'SELECT * FROM User ' + doSelect(select).join(' '),
                 (err, rows) => {
                     if (err) {
                         reject(err);
