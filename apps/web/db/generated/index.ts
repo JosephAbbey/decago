@@ -61,9 +61,9 @@ export class Post {
                     error
                         ? reject(error)
                         : db.get(
-                              'SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())',
-                              (error, row) =>
-                                  error
+                              'SELECT * FROM Post WHERE id = (SELECT last_insert_rowid())', 
+                              (error, row) => 
+                                  error 
                                       ? reject(error)
                                       : resolve(
                                             new Post(
@@ -90,7 +90,7 @@ export class Post {
         private _updatedAt: Date,
         private _authorId: number
     ) {}
-
+    
     get id(): number {
         return this._id;
     }
@@ -164,20 +164,20 @@ export class Post {
 }
 
 export class PostPromise extends Promise<Post> {
-    author = () =>
+    author = () => 
         new UserPromise((resolve, reject) => {
-            this.then((post) => resolve(post.author()));
+            this.then((__User) => resolve(__User.author()));
             this.catch((error) => reject(error));
         });
 }
 
 export class PostsPromise extends Promise<Post[]> {
-    author = () =>
+    author = () => 
         new UsersPromise((resolve, reject) => {
-            this.then((posts) =>
+            this.then((__Posts) =>
                 resolve(
-                    Promise.all(posts.flatMap((post) => post.author())).then(
-                        (users) => users.flat()
+                    Promise.all(__Posts.flatMap((__User) => __User.author())).then(
+                        (__Users) => __Users.flat()
                     )
                 )
             );
@@ -201,9 +201,9 @@ export class User {
                     error
                         ? reject(error)
                         : db.get(
-                              'SELECT * FROM User WHERE id = (SELECT last_insert_rowid())',
-                              (error, row) =>
-                                  error
+                              'SELECT * FROM User WHERE id = (SELECT last_insert_rowid())', 
+                              (error, row) => 
+                                  error 
                                       ? reject(error)
                                       : resolve(
                                             new User(
@@ -226,7 +226,7 @@ export class User {
         private _createdAt: Date,
         private _updatedAt: Date
     ) {}
-
+    
     get id(): number {
         return this._id;
     }
@@ -294,7 +294,7 @@ export class User {
 export class UserPromise extends Promise<User> {
     posts: (select?: Select<Post>) => PostsPromise = (...args) =>
         new PostsPromise((resolve, reject) => {
-            this.then((user) => resolve(user.posts(...args)));
+            this.then((__Post) => resolve(__Post.posts(...args)));
             this.catch((error) => reject(error));
         });
 }
@@ -302,11 +302,11 @@ export class UserPromise extends Promise<User> {
 export class UsersPromise extends Promise<User[]> {
     posts: (select?: Select<Post>) => PostsPromise = (...args) =>
         new PostsPromise((resolve, reject) => {
-            this.then((users) =>
+            this.then((__Users) =>
                 resolve(
-                    Promise.all(
-                        users.flatMap(async (user) => await user.posts(...args))
-                    ).then((posts) => posts.flat())
+                    Promise.all(__Users.flatMap(async (__Post) => await __Post.posts(...args))).then(
+                        (__Posts) => __Posts.flat()
+                    )
                 )
             );
             this.catch((error) => reject(error));
@@ -314,7 +314,7 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\apps\\web\\db\\data.sqlite');
     Posts = (select?: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(

@@ -4,7 +4,7 @@
     "main": "index.js",
     "license": "MIT",
     "bin": {
-        "form-orm": "bin/index.js"
+        "form-orm": "bin/form-orm"
     },
     "dependencies": {
         "sqlite3": "^5.0.9",

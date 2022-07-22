@@ -156,7 +156,7 @@ module.exports = function main() {
                     const sqlite3 = require('sqlite3').verbose();
                     new sqlite3.Database(source).exec(sql).close();
 
-                    var generated = `import { sqlite } from 'form-orm/providers';
+                    var generated = `import { sqlite } from '@form/orm/providers';
 
 const defaultSkip = 0;
 const defaultTake = 10;

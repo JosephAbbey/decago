@@ -1,5 +1,6 @@
 {
-    "name": "@form/orm-test",
+    "name": "test",
+    "private": true,
     "main": "./dist/src/index.js",
     "scripts": {
         "build": "tsc -p tsconfig.json",
