@@ -1,4 +1,4 @@
-import { sqlite } from 'form-orm/providers';
+import { sqlite } from '@form/orm/providers';
 
 const defaultSkip = 0;
 const defaultTake = 10;
