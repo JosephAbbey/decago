@@ -11,7 +11,7 @@ function capitalizeFirstLetter(string) {
 module.exports = function main() {
     extract('./db/schema.ts', (data) =>
         data.replaceAll(
-            'form-orm',
+            '@form/object-definition',
             resolve(__dirname, '../index.js').replaceAll('\\', '\\\\')
         )
     ).then(

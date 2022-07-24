@@ -10,6 +10,7 @@
     "dependencies": {
         "form": "./packages/form",
         "@form/orm": "./packages/form-orm",
+        "@form/object-definition": "./packages/form-object-definition",
         "react": "18.2.0",
         "react-dom": "18.2.0"
     },

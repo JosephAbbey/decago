@@ -1,4 +1,4 @@
-import { autoincremental, now, f } from 'form-orm';
+import { autoincremental, now, f } from '@form/object-definition';
 
 export default {
     type: 'sqlite',
