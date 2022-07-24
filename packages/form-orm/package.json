@@ -10,7 +10,8 @@
         "sqlite3": "^5.0.9",
         "tempy": "^3.0.0",
         "typescript": "^4.7.4",
-        "cli-highlight": "^2.1.11"
+        "cli-highlight": "^2.1.11",
+        "@form/typescript-extractor": "./packages/form-typescript-extractor"
     },
     "devDependencies": {
         "@types/node": "^18.0.6",

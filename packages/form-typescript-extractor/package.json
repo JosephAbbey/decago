@@ -1,0 +1,14 @@
+{
+    "name": "@form/typescript-extractor",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "dependencies": {
+        "tempy": "^3.0.0",
+        "typescript": "^4.7.4"
+    },
+    "devDependencies": {
+        "@types/node": "^18.0.6",
+        "@types/typescript": "^2.0.0"
+    }
+}

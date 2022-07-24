@@ -1,162 +1,144 @@
-const tempy = import('tempy');
-const { readFileSync, writeFileSync } = require('fs');
-const ts = require('typescript');
+const { writeFileSync } = require('fs');
 const { resolve, normalize } = require('path');
-const { inspect } = require('util');
 const highlight = require('cli-highlight').highlight;
 const { f } = require('..');
+const extract = require('@form/typescript-extractor');
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 module.exports = function main() {
-    tempy.then(({ temporaryFileTask }) => {
-        temporaryFileTask(
-            async (path) => {
-                writeFileSync(
-                    path,
-                    ts.transpile(
-                        readFileSync('./db/schema.ts')
-                            .toString()
-                            .replaceAll(
-                                'form-orm',
-                                resolve(__dirname, '../index.js').replaceAll(
-                                    '\\',
-                                    '\\\\'
-                                )
-                            )
-                    )
-                );
-                const data = require(path);
-                console.log(`data:\n${inspect(data, undefined, 20, true)}\n`);
+    extract('./db/schema.ts', (data) =>
+        data.replaceAll(
+            'form-orm',
+            resolve(__dirname, '../index.js').replaceAll('\\', '\\\\')
+        )
+    ).then(
+        async (data) => {
+            const source = normalize(
+                resolve('./db/schema.ts', '../', data.default.source)
+            ).replaceAll('\\', '\\\\');
+            console.log(`source: ${source}\n`);
 
-                const source = normalize(
-                    resolve('./db/schema.ts', '../', data.default.source)
-                ).replaceAll('\\', '\\\\');
-                console.log(`source: ${source}\n`);
+            const typescript = {
+                int: 'number',
+                float: 'number',
+                string: 'string',
+                date: 'Date',
+                boolean: 'boolean',
+            };
 
-                const typescript = {
-                    int: 'number',
-                    float: 'number',
-                    string: 'string',
-                    date: 'Date',
-                    boolean: 'boolean',
+            if (data.default.type === 'sqlite') {
+                const sqlite = {
+                    int: 'INTEGER',
+                    float: 'FLOAT',
+                    string: 'TEXT',
+                    date: 'DATE',
+                    boolean: 'BOOLEAN',
                 };
 
-                if (data.default.type === 'sqlite') {
-                    const sqlite = {
-                        int: 'INTEGER',
-                        float: 'FLOAT',
-                        string: 'TEXT',
-                        date: 'DATE',
-                        boolean: 'BOOLEAN',
-                    };
-
-                    function serializeSqliteDefault(value, type) {
-                        if (value instanceof Function) {
-                            if (value.name === 'autoincremental')
-                                return 'AUTOINCREMENT';
-                            if (value.name === 'now')
-                                return 'DEFAULT CURRENT_TIMESTAMP';
-                            throw new Error(
-                                `${value.name} is not a supported function`
-                            );
-                        } else {
-                            if (type === 'int') return `DEFAULT ${value}`;
-                            if (type === 'float') return `DEFAULT ${value}`;
-                            if (type === 'string') return `DEFAULT '${value}'`;
-                            if (type === 'boolean')
-                                return value ? 'DEFAULT 1' : 'DEFAULT 0';
-                            if (type === 'date')
-                                return `'DEFAULT ${value.getTime()}'`;
-                            throw new Error(`${type} is not supported`);
-                        }
+                function serializeSqliteDefault(value, type) {
+                    if (value instanceof Function) {
+                        if (value.name === 'autoincremental')
+                            return 'AUTOINCREMENT';
+                        if (value.name === 'now')
+                            return 'DEFAULT CURRENT_TIMESTAMP';
+                        throw new Error(
+                            `${value.name} is not a supported function`
+                        );
+                    } else {
+                        if (type === 'int') return `DEFAULT ${value}`;
+                        if (type === 'float') return `DEFAULT ${value}`;
+                        if (type === 'string') return `DEFAULT '${value}'`;
+                        if (type === 'boolean')
+                            return value ? 'DEFAULT 1' : 'DEFAULT 0';
+                        if (type === 'date')
+                            return `'DEFAULT ${value.getTime()}'`;
+                        throw new Error(`${type} is not supported`);
                     }
+                }
 
-                    var sql = 'PRAGMA foreign_keys = ON;\n\n';
-                    for (const m in data) {
-                        const model = data[m];
-                        var foreign_keys = '';
-                        if (!(model instanceof f.Model)) continue;
-                        sql += `CREATE TABLE IF NOT EXISTS ${model.name}(\n`;
-                        for (const field in model.schema) {
-                            var fieldSchema = model.schema[field];
-                            if (
-                                (fieldSchema instanceof f.Model) |
-                                (fieldSchema instanceof f.ModelPromise)
-                            ) {
-                                if (fieldSchema instanceof f.ModelPromise)
-                                    fieldSchema = await fieldSchema.model;
-                                const identifier_name = Object.keys(
+                var sql = 'PRAGMA foreign_keys = ON;\n\n';
+                for (const m in data) {
+                    const model = data[m];
+                    var foreign_keys = '';
+                    if (!(model instanceof f.Model)) continue;
+                    sql += `CREATE TABLE IF NOT EXISTS ${model.name}(\n`;
+                    for (const field in model.schema) {
+                        var fieldSchema = model.schema[field];
+                        if (
+                            (fieldSchema instanceof f.Model) |
+                            (fieldSchema instanceof f.ModelPromise)
+                        ) {
+                            if (fieldSchema instanceof f.ModelPromise)
+                                fieldSchema = await fieldSchema.model;
+                            const identifier_name = Object.keys(
+                                data[fieldSchema.name].schema
+                            )[
+                                Object.values(
                                     data[fieldSchema.name].schema
-                                )[
-                                    Object.values(
-                                        data[fieldSchema.name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
+                                ).findIndex((value) => value._id)
+                            ];
 
-                                sql += `    ${field}${capitalizeFirstLetter(
-                                    identifier_name
-                                )} ${
-                                    data[fieldSchema.name].schema[
-                                        identifier_name
-                                    ].type
-                                }${
-                                    fieldSchema._nullable ? '' : ' NOT NULL'
-                                },\n`;
+                            sql += `    ${field}${capitalizeFirstLetter(
+                                identifier_name
+                            )} ${
+                                data[fieldSchema.name].schema[identifier_name]
+                                    .type
+                            }${fieldSchema._nullable ? '' : ' NOT NULL'},\n`;
 
-                                foreign_keys += `    FOREIGN KEY(${field}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}) REFERENCES ${
-                                    fieldSchema.name
-                                }(${identifier_name}),\n`;
-                            } else if (fieldSchema instanceof f.List) {
-                                if (
-                                    [
-                                        'int',
-                                        'float',
-                                        'string',
-                                        'boolean',
-                                        'date',
-                                    ].includes(fieldSchema.of.type)
-                                )
-                                    throw new Error(
-                                        `List of ${fieldSchema.of.type} is not supported`
-                                    );
-                            } else {
-                                sql += `    ${field} ${
-                                    sqlite[fieldSchema.type]
-                                }${fieldSchema._nullable ? '' : ' NOT NULL'}${
-                                    fieldSchema._unique ? '' : ' UNIQUE'
-                                }${fieldSchema._id ? ' PRIMARY KEY' : ''}${
-                                    fieldSchema._default === undefined
-                                        ? ''
-                                        : ' ' +
-                                          serializeSqliteDefault(
-                                              fieldSchema._default,
-                                              fieldSchema.type
-                                          )
-                                },\n`;
-                            }
+                            foreign_keys += `    FOREIGN KEY(${field}${capitalizeFirstLetter(
+                                identifier_name
+                            )}) REFERENCES ${
+                                fieldSchema.name
+                            }(${identifier_name}),\n`;
+                        } else if (fieldSchema instanceof f.List) {
+                            if (
+                                [
+                                    'int',
+                                    'float',
+                                    'string',
+                                    'boolean',
+                                    'date',
+                                ].includes(fieldSchema.of.type)
+                            )
+                                throw new Error(
+                                    `List of ${fieldSchema.of.type} is not supported`
+                                );
+                        } else {
+                            sql += `    ${field} ${sqlite[fieldSchema.type]}${
+                                fieldSchema._nullable ? '' : ' NOT NULL'
+                            }${fieldSchema._unique ? '' : ' UNIQUE'}${
+                                fieldSchema._id ? ' PRIMARY KEY' : ''
+                            }${
+                                fieldSchema._default === undefined
+                                    ? ''
+                                    : ' ' +
+                                      serializeSqliteDefault(
+                                          fieldSchema._default,
+                                          fieldSchema.type
+                                      )
+                            },\n`;
                         }
-                        sql += foreign_keys;
-                        sql = sql.slice(0, -2);
-                        sql += `\n);\n\n`;
                     }
-                    sql = sql.slice(0, -1);
+                    sql += foreign_keys;
+                    sql = sql.slice(0, -2);
+                    sql += `\n);\n\n`;
+                }
+                sql = sql.slice(0, -1);
 
-                    console.log('sql:');
-                    console.log(highlight(sql, { language: 'sql' }));
-                    console.log();
+                console.log('sql:');
+                console.log(highlight(sql, { language: 'sql' }));
+                console.log();
 
-                    writeFileSync(resolve(source, '../init.sql'), sql);
+                writeFileSync(resolve(source, '../generated/init.sql'), sql);
 
-                    writeFileSync(source, '');
-                    const sqlite3 = require('sqlite3').verbose();
-                    new sqlite3.Database(source).exec(sql).close();
+                writeFileSync(source, '');
+                const sqlite3 = require('sqlite3').verbose();
+                new sqlite3.Database(source).exec(sql).close();
 
-                    var generated = `import { sqlite } from '@form/orm/providers';
+                var generated = `import { sqlite } from '@form/orm/providers';
 
 const defaultSkip = 0;
 const defaultTake = 10;
@@ -203,10 +185,10 @@ const doSelect = <T>(select: Select<T> | undefined) => [
 
 `;
 
-                    for (const m in data) {
-                        const model = data[m];
-                        if (!(model instanceof f.Model)) continue;
-                        generated += `export class ${model.name} {
+                for (const m in data) {
+                    const model = data[m];
+                    if (!(model instanceof f.Model)) continue;
+                    generated += `export class ${model.name} {
     static create(
         db: sqlite.Database${Object.keys(model.schema)
             .filter(
@@ -227,158 +209,152 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                     }`
             )
             .join('')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
                                     data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `,\n        _${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}: ${
-                                    typescript[
-                                        data[model.schema[key].name].schema[
-                                            identifier_name
-                                        ].type
-                                    ]
-                                }`;
-                            })
-                            .join('')}
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `,\n        _${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}: ${
+                                typescript[
+                                    data[model.schema[key].name].schema[
+                                        identifier_name
+                                    ].type
+                                ]
+                            }`;
+                        })
+                        .join('')}
     ) {
         return new ${model.name}Promise((resolve, reject) =>
             db.run(
                 \`INSERT INTO ${model.name} (\${[${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    !(
-                                        model.schema[key] instanceof f.List ||
-                                        model.schema[key] instanceof f.Model ||
-                                        model.schema[key] instanceof
-                                            f.ModelPromise
-                                    )
-                            )
-                            .map((key) => `"${key}"`)
-                            .join(', ')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
+                        .filter(
+                            (key) =>
+                                !(
+                                    model.schema[key] instanceof f.List ||
                                     model.schema[key] instanceof f.Model ||
                                     model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
-                                    data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `, "${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}"`;
-                            })
-                            .join('')}].filter((_, i) => Boolean([${Object.keys(
-                            model.schema
+                                )
                         )
-                            .filter(
-                                (key) =>
-                                    !(
-                                        model.schema[key] instanceof f.List ||
-                                        model.schema[key] instanceof f.Model ||
-                                        model.schema[key] instanceof
-                                            f.ModelPromise
-                                    )
-                            )
-                            .map((key) => `_${key}`)
-                            .join(', ')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
-                                    data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `, _${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}`;
-                            })
-                            .join(
-                                ''
-                            )}][i])).join(', ')}) VALUES (\${[${Object.keys(
-                            model.schema
+                        .map((key) => `"${key}"`)
+                        .join(', ')}${Object.keys(model.schema)
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
                         )
-                            .filter(
-                                (key) =>
-                                    !(
-                                        model.schema[key] instanceof f.List ||
-                                        model.schema[key] instanceof f.Model ||
-                                        model.schema[key] instanceof
-                                            f.ModelPromise
-                                    )
-                            )
-                            .map((key) => `"${key}"`)
-                            .join(', ')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
+                                    data[model.schema[key].name].schema
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `, "${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}"`;
+                        })
+                        .join('')}].filter((_, i) => Boolean([${Object.keys(
+                        model.schema
+                    )
+                        .filter(
+                            (key) =>
+                                !(
+                                    model.schema[key] instanceof f.List ||
                                     model.schema[key] instanceof f.Model ||
                                     model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
-                                    data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `, "${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}"`;
-                            })
-                            .join('')}].filter((_, i) => Boolean([${Object.keys(
-                            model.schema
+                                )
                         )
-                            .filter(
-                                (key) =>
-                                    !(
-                                        model.schema[key] instanceof f.List ||
-                                        model.schema[key] instanceof f.Model ||
-                                        model.schema[key] instanceof
-                                            f.ModelPromise
-                                    )
-                            )
-                            .map((key) => `_${key}`)
-                            .join(', ')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
+                        .map((key) => `_${key}`)
+                        .join(', ')}${Object.keys(model.schema)
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
+                                    data[model.schema[key].name].schema
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `, _${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}`;
+                        })
+                        .join('')}][i])).join(', ')}) VALUES (\${[${Object.keys(
+                        model.schema
+                    )
+                        .filter(
+                            (key) =>
+                                !(
+                                    model.schema[key] instanceof f.List ||
                                     model.schema[key] instanceof f.Model ||
                                     model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
+                                )
+                        )
+                        .map((key) => `"${key}"`)
+                        .join(', ')}${Object.keys(model.schema)
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
                                     data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `, _${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}`;
-                            })
-                            .join('')}][i])).map(() => "?").join(', ')})\`,
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `, "${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}"`;
+                        })
+                        .join('')}].filter((_, i) => Boolean([${Object.keys(
+                        model.schema
+                    )
+                        .filter(
+                            (key) =>
+                                !(
+                                    model.schema[key] instanceof f.List ||
+                                    model.schema[key] instanceof f.Model ||
+                                    model.schema[key] instanceof f.ModelPromise
+                                )
+                        )
+                        .map((key) => `_${key}`)
+                        .join(', ')}${Object.keys(model.schema)
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
+                                    data[model.schema[key].name].schema
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `, _${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}`;
+                        })
+                        .join('')}][i])).map(() => "?").join(', ')})\`,
                 [${Object.keys(model.schema)
                     .filter(
                         (key) =>
@@ -390,24 +366,24 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                     )
                     .map((key) => `_${key}`)
                     .join(', ')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
                                     data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `, _${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}`;
-                            })
-                            .join('')}].filter((v) => Boolean(v)),
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `, _${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}`;
+                        })
+                        .join('')}].filter((v) => Boolean(v)),
                 (error) =>
                     error
                         ? reject(error)
@@ -443,26 +419,26 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                                             `,\n                                                row.${key}`
                                                     )
                                                     .join('')}${Object.keys(
-                            model.schema
+                        model.schema
+                    )
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
                         )
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
                                     data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `,\n                                                row.${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}`;
-                            })
-                            .join('')}
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `,\n                                                row.${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}`;
+                        })
+                        .join('')}
                                             )
                                         )
                           )
@@ -487,30 +463,30 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                     }`
             )
             .join('')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const identifier_name = Object.keys(
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const identifier_name = Object.keys(
+                                data[model.schema[key].name].schema
+                            )[
+                                Object.values(
                                     data[model.schema[key].name].schema
-                                )[
-                                    Object.values(
-                                        data[model.schema[key].name].schema
-                                    ).findIndex((value) => value._id)
-                                ];
-                                return `,\n        private _${key}${capitalizeFirstLetter(
-                                    identifier_name
-                                )}: ${
-                                    typescript[
-                                        data[model.schema[key].name].schema[
-                                            identifier_name
-                                        ].type
-                                    ]
-                                }`;
-                            })
-                            .join('')}
+                                ).findIndex((value) => value._id)
+                            ];
+                            return `,\n        private _${key}${capitalizeFirstLetter(
+                                identifier_name
+                            )}: ${
+                                typescript[
+                                    data[model.schema[key].name].schema[
+                                        identifier_name
+                                    ].type
+                                ]
+                            }`;
+                        })
+                        .join('')}
     ) {}
     
 ${Object.keys(model.schema)
@@ -537,88 +513,82 @@ ${Object.keys(model.schema)
     }`;
     })
     .join('\n\n')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map((key) => {
-                                const id = Object.keys(model.schema)[
-                                    Object.values(model.schema).findIndex(
-                                        (value) => value._id
-                                    )
-                                ];
-                                const identifier_name = capitalizeFirstLetter(
-                                    Object.keys(
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map((key) => {
+                            const id = Object.keys(model.schema)[
+                                Object.values(model.schema).findIndex(
+                                    (value) => value._id
+                                )
+                            ];
+                            const identifier_name = capitalizeFirstLetter(
+                                Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
                                         data[model.schema[key].name].schema
-                                    )[
-                                        Object.values(
+                                    ).findIndex((value) => value._id)
+                                ]
+                            );
+                            return `\n\n    get ${key}${identifier_name}(): ${
+                                typescript[
+                                    data[model.schema[key].name].schema[
+                                        Object.keys(
                                             data[model.schema[key].name].schema
-                                        ).findIndex((value) => value._id)
-                                    ]
-                                );
-                                return `\n\n    get ${key}${identifier_name}(): ${
-                                    typescript[
-                                        data[model.schema[key].name].schema[
-                                            Object.keys(
+                                        )[
+                                            Object.values(
                                                 data[model.schema[key].name]
                                                     .schema
-                                            )[
-                                                Object.values(
-                                                    data[model.schema[key].name]
-                                                        .schema
-                                                ).findIndex(
-                                                    (value) => value._id
-                                                )
-                                            ]
-                                        ].type
-                                    ]
-                                } {
+                                            ).findIndex((value) => value._id)
+                                        ]
+                                    ].type
+                                ]
+                            } {
         return this._${key}${identifier_name};
     }
     set ${key}${identifier_name}(value: ${
-                                    typescript[
-                                        data[model.schema[key].name].schema[
-                                            Object.keys(
+                                typescript[
+                                    data[model.schema[key].name].schema[
+                                        Object.keys(
+                                            data[model.schema[key].name].schema
+                                        )[
+                                            Object.values(
                                                 data[model.schema[key].name]
                                                     .schema
-                                            )[
-                                                Object.values(
-                                                    data[model.schema[key].name]
-                                                        .schema
-                                                ).findIndex(
-                                                    (value) => value._id
-                                                )
-                                            ]
-                                        ].type
-                                    ]
-                                }) {
+                                            ).findIndex((value) => value._id)
+                                        ]
+                                    ].type
+                                ]
+                            }) {
         this._${key}${identifier_name} = value;
         this.db.run('UPDATE ${
             model.name
         } SET ${key}${identifier_name} = ? WHERE ${id} = ?', value, this._${id});
     }`;
-                            })
-                            .join('')}${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map(
-                                (key) => `\n\n    ${key} = () =>
+                        })
+                        .join('')}${Object.keys(model.schema)
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map(
+                            (key) => `\n\n    ${key} = () =>
         new ${model.schema[key].name}Promise((resolve, reject) =>
             this.db.get(
                 'SELECT * FROM ${model.schema[key].name} WHERE id = ?',
                 [this._${key}${capitalizeFirstLetter(
-                                    Object.keys(
+                                Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
                                         data[model.schema[key].name].schema
-                                    )[
-                                        Object.values(
-                                            data[model.schema[key].name].schema
-                                        ).findIndex((value) => value._id)
-                                    ]
-                                )}],
+                                    ).findIndex((value) => value._id)
+                                ]
+                            )}],
                 (error, result) => {
                     if (error) {
                         reject(error);
@@ -647,51 +617,50 @@ ${Object.keys(model.schema)
                                             `,\n                                result.${key}`
                                     )
                                     .join('')}${Object.keys(
-                                    data[model.schema[key].name].schema
+                                data[model.schema[key].name].schema
+                            )
+                                .filter(
+                                    (k) =>
+                                        data[model.schema[key].name].schema[
+                                            k
+                                        ] instanceof f.Model ||
+                                        data[model.schema[key].name].schema[
+                                            k
+                                        ] instanceof f.ModelPromise
                                 )
-                                    .filter(
-                                        (k) =>
+                                .map((k) => {
+                                    const identifier_name = Object.keys(
+                                        data[
                                             data[model.schema[key].name].schema[
                                                 k
-                                            ] instanceof f.Model ||
-                                            data[model.schema[key].name].schema[
-                                                k
-                                            ] instanceof f.ModelPromise
-                                    )
-                                    .map((k) => {
-                                        const identifier_name = Object.keys(
+                                            ].name
+                                        ].schema
+                                    )[
+                                        Object.values(
                                             data[
                                                 data[model.schema[key].name]
                                                     .schema[k].name
                                             ].schema
-                                        )[
-                                            Object.values(
-                                                data[
-                                                    data[model.schema[key].name]
-                                                        .schema[k].name
-                                                ].schema
-                                            ).findIndex((value) => value._id)
-                                        ];
-                                        return `,\n                                result.${key}${capitalizeFirstLetter(
-                                            identifier_name
-                                        )}`;
-                                    })
-                                    .join('')}
+                                        ).findIndex((value) => value._id)
+                                    ];
+                                    return `,\n                                result.${key}${capitalizeFirstLetter(
+                                        identifier_name
+                                    )}`;
+                                })
+                                .join('')}
                             )
                         );
                     }
                 }
             )
         );`
-                            )}${Object.keys(model.schema)
-                            .filter(
-                                (key) => model.schema[key] instanceof f.List
-                            )
-                            .map(
-                                (key) =>
-                                    `\n\n    ${key} = (select?: Select<${
-                                        model.schema[key].of.name
-                                    }>) => {
+                        )}${Object.keys(model.schema)
+                        .filter((key) => model.schema[key] instanceof f.List)
+                        .map(
+                            (key) =>
+                                `\n\n    ${key} = (select?: Select<${
+                                    model.schema[key].of.name
+                                }>) => {
         select = select || {};
         select.where = select.where || {};
         select.where.authorId = this._id;
@@ -737,42 +706,37 @@ ${Object.keys(model.schema)
                                                     `,\n                                        row.${key}`
                                             )
                                             .join('')}${Object.keys(
-                                        data[model.schema[key].of.name].schema
+                                    data[model.schema[key].of.name].schema
+                                )
+                                    .filter(
+                                        (k) =>
+                                            data[model.schema[key].of.name]
+                                                .schema[k] instanceof f.Model ||
+                                            data[model.schema[key].of.name]
+                                                .schema[k] instanceof
+                                                f.ModelPromise
                                     )
-                                        .filter(
-                                            (k) =>
+                                    .map((k) => {
+                                        const identifier_name = Object.keys(
+                                            data[
                                                 data[model.schema[key].of.name]
-                                                    .schema[k] instanceof
-                                                    f.Model ||
-                                                data[model.schema[key].of.name]
-                                                    .schema[k] instanceof
-                                                    f.ModelPromise
-                                        )
-                                        .map((k) => {
-                                            const identifier_name = Object.keys(
+                                                    .schema[k].name
+                                            ].schema
+                                        )[
+                                            Object.values(
                                                 data[
                                                     data[
                                                         model.schema[key].of
                                                             .name
                                                     ].schema[k].name
                                                 ].schema
-                                            )[
-                                                Object.values(
-                                                    data[
-                                                        data[
-                                                            model.schema[key].of
-                                                                .name
-                                                        ].schema[k].name
-                                                    ].schema
-                                                ).findIndex(
-                                                    (value) => value._id
-                                                )
-                                            ];
-                                            return `,\n                                        row.${k}${capitalizeFirstLetter(
-                                                identifier_name
-                                            )}`;
-                                        })
-                                        .join('')}
+                                            ).findIndex((value) => value._id)
+                                        ];
+                                        return `,\n                                        row.${k}${capitalizeFirstLetter(
+                                            identifier_name
+                                        )}`;
+                                    })
+                                    .join('')}
                                     )
                             )
                         );
@@ -781,49 +745,47 @@ ${Object.keys(model.schema)
             );
         });
     };`
-                            )}
+                        )}
 }
 
 export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
-                            model.schema
+                        model.schema
+                    )
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
                         )
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map(
-                                (key) =>
-                                    `\n    ${key} = () => 
+                        .map(
+                            (key) =>
+                                `\n    ${key} = () => 
         new ${model.schema[key].name}Promise((resolve, reject) => {
             this.then((__${model.schema[key].name}) => resolve(__${model.schema[key].name}.${key}()));
             this.catch((error) => reject(error));
         });`
-                            )}${Object.keys(model.schema)
-                            .filter(
-                                (key) => model.schema[key] instanceof f.List
-                            )
-                            .map(
-                                (key) =>
-                                    `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
+                        )}${Object.keys(model.schema)
+                        .filter((key) => model.schema[key] instanceof f.List)
+                        .map(
+                            (key) =>
+                                `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
         new ${model.schema[key].of.name}sPromise((resolve, reject) => {
             this.then((__${model.schema[key].of.name}) => resolve(__${model.schema[key].of.name}.${key}(...args)));
             this.catch((error) => reject(error));
         });`
-                            )}
+                        )}
 }
 
 export class ${model.name}sPromise extends Promise<${
-                            model.name
-                        }[]> {${Object.keys(model.schema)
-                            .filter(
-                                (key) =>
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
-                            )
-                            .map(
-                                (key) =>
-                                    `\n    ${key} = () => 
+                        model.name
+                    }[]> {${Object.keys(model.schema)
+                        .filter(
+                            (key) =>
+                                model.schema[key] instanceof f.Model ||
+                                model.schema[key] instanceof f.ModelPromise
+                        )
+                        .map(
+                            (key) =>
+                                `\n    ${key} = () => 
         new ${model.schema[key].name}sPromise((resolve, reject) => {
             this.then((__${model.name}s) =>
                 resolve(
@@ -834,13 +796,11 @@ export class ${model.name}sPromise extends Promise<${
             );
             this.catch((error) => reject(error));
         });`
-                            )}${Object.keys(model.schema)
-                            .filter(
-                                (key) => model.schema[key] instanceof f.List
-                            )
-                            .map(
-                                (key) =>
-                                    `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
+                        )}${Object.keys(model.schema)
+                        .filter((key) => model.schema[key] instanceof f.List)
+                        .map(
+                            (key) =>
+                                `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
         new ${model.schema[key].of.name}sPromise((resolve, reject) => {
             this.then((__${model.name}s) =>
                 resolve(
@@ -851,13 +811,13 @@ export class ${model.name}sPromise extends Promise<${
             );
             this.catch((error) => reject(error));
         });`
-                            )}
+                        )}
 }
 
 `;
-                    }
+                }
 
-                    generated += `export class DB {
+                generated += `export class DB {
     public db: sqlite.Database = new sqlite.Database('${source}');
 ${Object.keys(data)
     .filter((key) => key !== 'default')
@@ -925,16 +885,13 @@ ${Object.keys(data)
     constructor() {}
 }`;
 
-                    generated += '\n\nexport default new DB();\n';
-                    console.log('ts:');
-                    console.log(
-                        highlight(generated, { language: 'typescript' })
-                    );
+                generated += '\n\nexport default new DB();\n';
+                console.log('ts:');
+                console.log(highlight(generated, { language: 'typescript' }));
 
-                    writeFileSync('./db/generated/index.ts', generated);
-                }
-            },
-            { extension: 'js' }
-        );
-    });
+                writeFileSync('./db/generated/index.ts', generated);
+            }
+        },
+        { extension: 'js' }
+    );
 };

@@ -35,8 +35,15 @@
 "@form/orm@./packages/form-orm":
   version "1.0.0"
   dependencies:
+    "@form/typescript-extractor" "./packages/form-typescript-extractor"
     cli-highlight "^2.1.11"
     sqlite3 "^5.0.9"
+    tempy "^3.0.0"
+    typescript "^4.7.4"
+
+"@form/typescript-extractor@./packages/form-typescript-extractor":
+  version "1.0.0"
+  dependencies:
     tempy "^3.0.0"
     typescript "^4.7.4"
 
