@@ -11,7 +11,8 @@
         "tempy": "^3.0.0",
         "typescript": "^4.7.4",
         "cli-highlight": "^2.1.11",
-        "@form/typescript-extractor": "./packages/form-typescript-extractor"
+        "@form/typescript-extractor": "./packages/form-typescript-extractor",
+        "@form/object-definition": "./packages/form-object-definition"
     },
     "devDependencies": {
         "@types/node": "^18.0.6",

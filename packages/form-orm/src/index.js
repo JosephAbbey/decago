@@ -1,7 +1,7 @@
 const { writeFileSync } = require('fs');
 const { resolve, normalize } = require('path');
 const highlight = require('cli-highlight').highlight;
-const { f } = require('..');
+const { f } = require('@form/object-definition');
 const extract = require('@form/typescript-extractor');
 
 function capitalizeFirstLetter(string) {

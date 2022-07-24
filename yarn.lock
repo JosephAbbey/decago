@@ -32,9 +32,13 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@form/object-definition@./packages/form-object-definition":
+  version "1.0.0"
+
 "@form/orm@./packages/form-orm":
   version "1.0.0"
   dependencies:
+    "@form/object-definition" "./packages/form-object-definition"
     "@form/typescript-extractor" "./packages/form-typescript-extractor"
     cli-highlight "^2.1.11"
     sqlite3 "^5.0.9"
