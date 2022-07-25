@@ -1,0 +1,1 @@
+When you contribute, do it in te form of a fork and pull request. If the ci fails on your PR then your request maybe overlooked but it may still be analyzed for ideas. You may also create an issue or start / contribute to a discussion. Ensure that you obide by the code of conduct and you use an issue template for issues.
