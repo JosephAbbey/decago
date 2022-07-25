@@ -1,8 +1,8 @@
 const { writeFileSync } = require('fs');
 const { resolve, normalize } = require('path');
 const highlight = require('cli-highlight').highlight;
-const { f } = require('@form/object-definition');
-const extract = require('@form/typescript-extractor');
+const { t } = require('@decago/object-definition');
+const extract = require('@decago/typescript-extractor');
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -11,7 +11,7 @@ function capitalizeFirstLetter(string) {
 module.exports = function main() {
     extract('./db/schema.ts', (data) =>
         data.replaceAll(
-            '@form/object-definition',
+            '@decago/object-definition',
             resolve(__dirname, '../index.js').replaceAll('\\', '\\\\')
         )
     ).then(
@@ -63,15 +63,15 @@ module.exports = function main() {
                 for (const m in data) {
                     const model = data[m];
                     var foreign_keys = '';
-                    if (!(model instanceof f.Model)) continue;
+                    if (!(model instanceof t.Model)) continue;
                     sql += `CREATE TABLE IF NOT EXISTS ${model.name}(\n`;
                     for (const field in model.schema) {
                         var fieldSchema = model.schema[field];
                         if (
-                            (fieldSchema instanceof f.Model) |
-                            (fieldSchema instanceof f.ModelPromise)
+                            (fieldSchema instanceof t.Model) |
+                            (fieldSchema instanceof t.ModelPromise)
                         ) {
-                            if (fieldSchema instanceof f.ModelPromise)
+                            if (fieldSchema instanceof t.ModelPromise)
                                 fieldSchema = await fieldSchema.model;
                             const identifier_name = Object.keys(
                                 data[fieldSchema.name].schema
@@ -93,7 +93,7 @@ module.exports = function main() {
                             )}) REFERENCES ${
                                 fieldSchema.name
                             }(${identifier_name}),\n`;
-                        } else if (fieldSchema instanceof f.List) {
+                        } else if (fieldSchema instanceof t.List) {
                             if (
                                 [
                                     'int',
@@ -138,7 +138,7 @@ module.exports = function main() {
                 const sqlite3 = require('sqlite3').verbose();
                 new sqlite3.Database(source).exec(sql).close();
 
-                var generated = `import { sqlite } from '@form/orm/providers';
+                var generated = `import { sqlite } from '@decago/orm/providers';
 
 const defaultSkip = 0;
 const defaultTake = 10;
@@ -187,16 +187,16 @@ const doSelect = <T>(select: Select<T> | undefined) => [
 
                 for (const m in data) {
                     const model = data[m];
-                    if (!(model instanceof f.Model)) continue;
+                    if (!(model instanceof t.Model)) continue;
                     generated += `export class ${model.name} {
     static create(
         db: sqlite.Database${Object.keys(model.schema)
             .filter(
                 (key) =>
                     !(
-                        model.schema[key] instanceof f.List ||
-                        model.schema[key] instanceof f.Model ||
-                        model.schema[key] instanceof f.ModelPromise
+                        model.schema[key] instanceof t.List ||
+                        model.schema[key] instanceof t.Model ||
+                        model.schema[key] instanceof t.ModelPromise
                     )
             )
             .map(
@@ -211,8 +211,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
             .join('')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -240,17 +240,17 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                         .filter(
                             (key) =>
                                 !(
-                                    model.schema[key] instanceof f.List ||
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
+                                    model.schema[key] instanceof t.List ||
+                                    model.schema[key] instanceof t.Model ||
+                                    model.schema[key] instanceof t.ModelPromise
                                 )
                         )
                         .map((key) => `"${key}"`)
                         .join(', ')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -270,17 +270,17 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                         .filter(
                             (key) =>
                                 !(
-                                    model.schema[key] instanceof f.List ||
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
+                                    model.schema[key] instanceof t.List ||
+                                    model.schema[key] instanceof t.Model ||
+                                    model.schema[key] instanceof t.ModelPromise
                                 )
                         )
                         .map((key) => `_${key}`)
                         .join(', ')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -300,17 +300,17 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                         .filter(
                             (key) =>
                                 !(
-                                    model.schema[key] instanceof f.List ||
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
+                                    model.schema[key] instanceof t.List ||
+                                    model.schema[key] instanceof t.Model ||
+                                    model.schema[key] instanceof t.ModelPromise
                                 )
                         )
                         .map((key) => `"${key}"`)
                         .join(', ')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -330,17 +330,17 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                         .filter(
                             (key) =>
                                 !(
-                                    model.schema[key] instanceof f.List ||
-                                    model.schema[key] instanceof f.Model ||
-                                    model.schema[key] instanceof f.ModelPromise
+                                    model.schema[key] instanceof t.List ||
+                                    model.schema[key] instanceof t.Model ||
+                                    model.schema[key] instanceof t.ModelPromise
                                 )
                         )
                         .map((key) => `_${key}`)
                         .join(', ')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -359,17 +359,17 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                     .filter(
                         (key) =>
                             !(
-                                model.schema[key] instanceof f.List ||
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.List ||
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                             )
                     )
                     .map((key) => `_${key}`)
                     .join(', ')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -403,15 +403,15 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                                                 model.schema[
                                                                     key
                                                                 ] instanceof
-                                                                    f.List ||
+                                                                    t.List ||
                                                                 model.schema[
                                                                     key
                                                                 ] instanceof
-                                                                    f.Model ||
+                                                                    t.Model ||
                                                                 model.schema[
                                                                     key
                                                                 ] instanceof
-                                                                    f.ModelPromise
+                                                                    t.ModelPromise
                                                             )
                                                     )
                                                     .map(
@@ -423,8 +423,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                     )
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -451,9 +451,9 @@ const doSelect = <T>(select: Select<T> | undefined) => [
             .filter(
                 (key) =>
                     !(
-                        model.schema[key] instanceof f.List ||
-                        model.schema[key] instanceof f.Model ||
-                        model.schema[key] instanceof f.ModelPromise
+                        model.schema[key] instanceof t.List ||
+                        model.schema[key] instanceof t.Model ||
+                        model.schema[key] instanceof t.ModelPromise
                     )
             )
             .map(
@@ -465,8 +465,8 @@ const doSelect = <T>(select: Select<T> | undefined) => [
             .join('')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const identifier_name = Object.keys(
@@ -493,9 +493,9 @@ ${Object.keys(model.schema)
     .filter(
         (key) =>
             !(
-                model.schema[key] instanceof f.List ||
-                model.schema[key] instanceof f.Model ||
-                model.schema[key] instanceof f.ModelPromise
+                model.schema[key] instanceof t.List ||
+                model.schema[key] instanceof t.Model ||
+                model.schema[key] instanceof t.ModelPromise
             )
     )
     .map((key) => {
@@ -515,8 +515,8 @@ ${Object.keys(model.schema)
     .join('\n\n')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map((key) => {
                             const id = Object.keys(model.schema)[
@@ -572,8 +572,8 @@ ${Object.keys(model.schema)
                         .join('')}${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map(
                             (key) => `\n\n    ${key} = () =>
@@ -603,13 +603,13 @@ ${Object.keys(model.schema)
                                             !(
                                                 data[model.schema[key].name]
                                                     .schema[k] instanceof
-                                                    f.List ||
+                                                    t.List ||
                                                 data[model.schema[key].name]
                                                     .schema[k] instanceof
-                                                    f.Model ||
+                                                    t.Model ||
                                                 data[model.schema[key].name]
                                                     .schema[k] instanceof
-                                                    f.ModelPromise
+                                                    t.ModelPromise
                                             )
                                     )
                                     .map(
@@ -623,10 +623,10 @@ ${Object.keys(model.schema)
                                     (k) =>
                                         data[model.schema[key].name].schema[
                                             k
-                                        ] instanceof f.Model ||
+                                        ] instanceof t.Model ||
                                         data[model.schema[key].name].schema[
                                             k
-                                        ] instanceof f.ModelPromise
+                                        ] instanceof t.ModelPromise
                                 )
                                 .map((k) => {
                                     const identifier_name = Object.keys(
@@ -655,7 +655,7 @@ ${Object.keys(model.schema)
             )
         );`
                         )}${Object.keys(model.schema)
-                        .filter((key) => model.schema[key] instanceof f.List)
+                        .filter((key) => model.schema[key] instanceof t.List)
                         .map(
                             (key) =>
                                 `\n\n    ${key} = (select?: Select<${
@@ -688,17 +688,17 @@ ${Object.keys(model.schema)
                                                             model.schema[key].of
                                                                 .name
                                                         ].schema[k] instanceof
-                                                            f.List ||
+                                                            t.List ||
                                                         data[
                                                             model.schema[key].of
                                                                 .name
                                                         ].schema[k] instanceof
-                                                            f.Model ||
+                                                            t.Model ||
                                                         data[
                                                             model.schema[key].of
                                                                 .name
                                                         ].schema[k] instanceof
-                                                            f.ModelPromise
+                                                            t.ModelPromise
                                                     )
                                             )
                                             .map(
@@ -711,10 +711,10 @@ ${Object.keys(model.schema)
                                     .filter(
                                         (k) =>
                                             data[model.schema[key].of.name]
-                                                .schema[k] instanceof f.Model ||
+                                                .schema[k] instanceof t.Model ||
                                             data[model.schema[key].of.name]
                                                 .schema[k] instanceof
-                                                f.ModelPromise
+                                                t.ModelPromise
                                     )
                                     .map((k) => {
                                         const identifier_name = Object.keys(
@@ -753,8 +753,8 @@ export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
                     )
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map(
                             (key) =>
@@ -764,7 +764,7 @@ export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
             this.catch((error) => reject(error));
         });`
                         )}${Object.keys(model.schema)
-                        .filter((key) => model.schema[key] instanceof f.List)
+                        .filter((key) => model.schema[key] instanceof t.List)
                         .map(
                             (key) =>
                                 `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
@@ -780,8 +780,8 @@ export class ${model.name}sPromise extends Promise<${
                     }[]> {${Object.keys(model.schema)
                         .filter(
                             (key) =>
-                                model.schema[key] instanceof f.Model ||
-                                model.schema[key] instanceof f.ModelPromise
+                                model.schema[key] instanceof t.Model ||
+                                model.schema[key] instanceof t.ModelPromise
                         )
                         .map(
                             (key) =>
@@ -797,7 +797,7 @@ export class ${model.name}sPromise extends Promise<${
             this.catch((error) => reject(error));
         });`
                         )}${Object.keys(model.schema)
-                        .filter((key) => model.schema[key] instanceof f.List)
+                        .filter((key) => model.schema[key] instanceof t.List)
                         .map(
                             (key) =>
                                 `\n    ${key}: (select?: Select<${model.schema[key].of.name}>) => ${model.schema[key].of.name}sPromise = (...args) =>
@@ -840,14 +840,14 @@ ${Object.keys(data)
                                                     !(
                                                         data[key].schema[
                                                             k
-                                                        ] instanceof f.List ||
+                                                        ] instanceof t.List ||
                                                         data[key].schema[
                                                             k
-                                                        ] instanceof f.Model ||
+                                                        ] instanceof t.Model ||
                                                         data[key].schema[
                                                             k
                                                         ] instanceof
-                                                            f.ModelPromise
+                                                            t.ModelPromise
                                                     )
                                             )
                                             .map(
@@ -859,8 +859,8 @@ ${Object.keys(data)
         )
             .filter(
                 (k) =>
-                    data[key].schema[k] instanceof f.Model ||
-                    data[key].schema[k] instanceof f.ModelPromise
+                    data[key].schema[k] instanceof t.Model ||
+                    data[key].schema[k] instanceof t.ModelPromise
             )
             .map(
                 (k) =>

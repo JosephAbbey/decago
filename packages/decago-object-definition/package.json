@@ -1,5 +1,5 @@
 {
-    "name": "@form/object-definition",
+    "name": "@decago/object-definition",
     "version": "1.0.0",
     "main": "index.js",
     "license": "MIT"

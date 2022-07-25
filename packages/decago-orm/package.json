@@ -1,18 +1,18 @@
 {
-    "name": "@form/orm",
+    "name": "@decago/orm",
     "version": "1.0.0",
     "main": "index.js",
     "license": "MIT",
     "bin": {
-        "form-orm": "bin/form-orm"
+        "decago-orm": "bin/decago-orm"
     },
     "dependencies": {
         "sqlite3": "^5.0.10",
         "tempy": "^3.0.0",
         "typescript": "^4.7.4",
         "cli-highlight": "^2.1.11",
-        "@form/typescript-extractor": "./packages/form-typescript-extractor",
-        "@form/object-definition": "./packages/form-object-definition"
+        "@decago/typescript-extractor": "./packages/decago-typescript-extractor",
+        "@decago/object-definition": "./packages/decago-object-definition"
     },
     "devDependencies": {
         "@types/node": "^18.6.1",

@@ -1,6 +1,6 @@
 import { autoincremental, now, t } from '@decago/object-definition';
 
-const config = {
+export default {
     type: 'sqlite',
     source: './data.sqlite',
 };
@@ -21,5 +21,3 @@ export const User = new t.Model('User', {
     createdAt: t.date().default(now),
     updatedAt: t.date().default(now),
 });
-
-export default config;

@@ -1,7 +1,7 @@
 export function autoincremental(): number;
 export function now(): Date;
 
-export namespace f {
+export namespace t {
     export type ScalarType = number | string | boolean | Date;
     export type ScalarTypeObject =
         | Object<number>

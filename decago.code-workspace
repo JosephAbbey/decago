@@ -5,6 +5,9 @@
         }
     ],
     "settings": {
-        "cSpell.words": ["autoincremental"]
+        "cSpell.words": [
+            "autoincremental",
+            "Decago"
+        ]
     }
 }

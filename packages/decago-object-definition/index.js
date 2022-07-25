@@ -59,7 +59,7 @@ class List {
 module.exports = {
     autoincremental: () => 0,
     now: () => new Date(),
-    f: {
+    t: {
         listOf: (type) => new List(type),
         int: () => new Object('int'),
         float: () => new Object('float'),

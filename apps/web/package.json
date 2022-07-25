@@ -3,14 +3,14 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "dev": "# form dev",
-        "build": "# form build",
-        "start": "# form start"
+        "dev": "# decago dev",
+        "build": "# decago build",
+        "start": "# decago start"
     },
     "dependencies": {
-        "form": "./packages/form",
-        "@form/orm": "./packages/form-orm",
-        "@form/object-definition": "./packages/form-object-definition",
+        "decago": "./packages/decago",
+        "@decago/orm": "./packages/decago-orm",
+        "@decago/object-definition": "./packages/decago-object-definition",
         "react": "18.2.0",
         "react-dom": "18.2.0"
     },

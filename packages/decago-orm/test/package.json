@@ -5,10 +5,10 @@
     "scripts": {
         "build": "tsc -p tsconfig.json",
         "start": "node ./dist/src/index.js",
-        "test": "npm run build & npm start"
+        "test": "yarn build & yarn start"
     },
     "dependencies": {
-        "@form/orm": "file:../"
+        "@decago/orm": "file:../"
     },
     "devDependencies": {
         "typescript": "4.7.4"

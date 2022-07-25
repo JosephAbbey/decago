@@ -1,4 +1,4 @@
-import { sqlite } from '@form/orm/providers';
+import { sqlite } from '@decago/orm/providers';
 
 const defaultSkip = 0;
 const defaultTake = 10;
@@ -314,7 +314,7 @@ export class UsersPromise extends Promise<User[]> {
 }
 
 export class DB {
-    public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\form\\packages\\form-orm\\test\\db\\data.sqlite');
+    public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\decago\\packages\\decago-orm\\test\\db\\data.sqlite');
     Posts = (select?: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
             this.db.all(

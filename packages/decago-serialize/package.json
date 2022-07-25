@@ -1,5 +1,5 @@
 {
-  "name": "@form/serialize",
+  "name": "@decago/serialize",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT"
