@@ -28,12 +28,6 @@ export namespace f {
           }>
         | ModelPromise;
 
-    export type type<T> = T extends Object<infer X>
-        ? X
-        : T extends List<infer X>
-        ? X
-        : never;
-
     export type infer<T> = T extends Object<infer X>
         ? X
         : T extends List<infer Y>
