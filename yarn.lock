@@ -23,16 +23,10 @@
 "@decago/orm@./packages/decago-orm":
   version "1.0.0"
   dependencies:
-    "@decago/object-definition" "./packages/decago-object-definition"
-    "@decago/typescript-extractor" "./packages/decago-typescript-extractor"
+    "@decago/object-definition" "1.0.0"
+    "@decago/typescript-extractor" "1.0.0"
     cli-highlight "^2.1.11"
     sqlite3 "^5.0.10"
-    tempy "^3.0.0"
-    typescript "^4.7.4"
-
-"@decago/typescript-extractor@./packages/decago-typescript-extractor":
-  version "1.0.0"
-  dependencies:
     tempy "^3.0.0"
     typescript "^4.7.4"
 

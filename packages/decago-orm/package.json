@@ -11,8 +11,8 @@
         "tempy": "^3.0.0",
         "typescript": "^4.7.4",
         "cli-highlight": "^2.1.11",
-        "@decago/typescript-extractor": "./packages/decago-typescript-extractor",
-        "@decago/object-definition": "./packages/decago-object-definition"
+        "@decago/typescript-extractor": "1.0.0",
+        "@decago/object-definition": "1.0.0"
     },
     "devDependencies": {
         "@types/node": "^18.6.1",

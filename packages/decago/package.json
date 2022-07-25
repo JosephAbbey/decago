@@ -1,6 +1,10 @@
 {
-  "name": "decago",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT"
+    "name": "decago",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JosephAbbey/decago"
+    }
 }
