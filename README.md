@@ -6,6 +6,9 @@
 [![Made with JavaScript](https://img.shields.io/badge/Made%20with-JavaScript-yellow?style=for-the-badge&logo=Javascript)](https://www.javascript.com)
 [![Made with and for TypeScript](https://img.shields.io/badge/Made%20with%20and%20for-TypeScript-blue?style=for-the-badge&logo=Typescript)](https://www.typescriptlang.org/)
 
+[![NPM](https://nodei.co/npm/decago.png)](https://npmjs.org/package/decago)
+[![NPM](https://nodei.co/npm/@decago/orm.png?mini=true)](https://npmjs.org/package/@decago/orm)
+
 # Decago
 
 A framework for building nextjs apps including a database, authentication, routing, and a server.
