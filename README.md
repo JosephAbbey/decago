@@ -7,6 +7,7 @@
 [![Made with and for TypeScript](https://img.shields.io/badge/Made%20with%20and%20for-TypeScript-blue?style=for-the-badge&logo=Typescript)](https://www.typescriptlang.org/)
 
 [![NPM](https://nodei.co/npm/decago.png)](https://npmjs.org/package/decago)
+
 [![NPM](https://nodei.co/npm/@decago/orm.png?mini=true)](https://npmjs.org/package/@decago/orm)
 
 # Decago
