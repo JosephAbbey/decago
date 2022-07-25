@@ -887,7 +887,12 @@ ${Object.keys(data)
 
                 generated += '\n\nexport default new DB();\n';
                 console.log('ts:');
-                console.log(highlight(generated, { language: 'typescript' }));
+                console.log(
+                    highlight(generated, {
+                        language: 'ts',
+                        ignoreIllegals: true,
+                    })
+                );
 
                 writeFileSync('./db/generated/index.ts', generated);
             }
