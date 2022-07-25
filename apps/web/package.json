@@ -3,9 +3,9 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "dev": "form dev",
-        "build": "form build",
-        "start": "form start"
+        "dev": "# form dev",
+        "build": "# form build",
+        "start": "# form start"
     },
     "dependencies": {
         "form": "./packages/form",
