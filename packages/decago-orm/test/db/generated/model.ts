@@ -164,6 +164,16 @@ export class Post {
                 }
             )
         );
+
+    delete = () => new Promise<void>(
+        (resolve, reject) =>
+            this.db.run(
+                'DELETE FROM User WHERE id = ?',
+                [this._id],
+                (error) =>
+                    error ? reject(error) : resolve()
+            )
+    );
 }
 
 export class PostPromise extends Promise<Post> {
@@ -172,6 +182,8 @@ export class PostPromise extends Promise<Post> {
             this.then((post) => resolve(post.author()));
             this.catch((error) => reject(error));
         });
+
+    delete = () => this.then((post) => post.delete());
 }
 
 export class PostsPromise extends Promise<Post[]> {
@@ -186,6 +198,8 @@ export class PostsPromise extends Promise<Post[]> {
             );
             this.catch((error) => reject(error));
         });
+
+    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
 }
 
 export class User {
@@ -295,6 +309,16 @@ export class User {
             );
         });
     };
+
+    delete = () => new Promise<void>(
+        (resolve, reject) =>
+            this.db.run(
+                'DELETE FROM User WHERE id = ?',
+                [this._id],
+                (error) =>
+                    error ? reject(error) : resolve()
+            )
+    );
 }
 
 export class UserPromise extends Promise<User> {
@@ -303,6 +327,8 @@ export class UserPromise extends Promise<User> {
             this.then((user) => resolve(user.posts(...args)));
             this.catch((error) => reject(error));
         });
+
+    delete = () => this.then((user) => user.delete());
 }
 
 export class UsersPromise extends Promise<User[]> {
@@ -317,6 +343,8 @@ export class UsersPromise extends Promise<User[]> {
             );
             this.catch((error) => reject(error));
         });
+
+    delete = () => this.then((users) => Promise.all(users.map((user) => user.delete())));
 }
 
 export class DB {

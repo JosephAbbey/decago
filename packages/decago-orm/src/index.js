@@ -388,9 +388,13 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                     error
                         ? reject(error)
                         : db.get(
-                              'SELECT * FROM ${
-                                  model.name
-                              } WHERE id = (SELECT last_insert_rowid())', 
+                              'SELECT * FROM ${model.name} WHERE ${
+                        Object.keys(model.schema)[
+                            Object.values(model.schema).findIndex(
+                                (value) => value._id
+                            )
+                        ]
+                    } = (SELECT last_insert_rowid())', 
                               (error, row) => 
                                   error 
                                       ? reject(error)
@@ -582,7 +586,15 @@ ${Object.keys(model.schema)
                             (key) => `\n\n    ${key} = () =>
         new ${model.schema[key].name}Promise((resolve, reject) =>
             this.db.get(
-                'SELECT * FROM ${model.schema[key].name} WHERE id = ?',
+                'SELECT * FROM ${model.schema[key].name} WHERE ${
+                                Object.keys(
+                                    data[model.schema[key].name].schema
+                                )[
+                                    Object.values(
+                                        data[model.schema[key].name].schema
+                                    ).findIndex((value) => value._id)
+                                ]
+                            } = ?',
                 [this._${key}${capitalizeFirstLetter(
                                 Object.keys(
                                     data[model.schema[key].name].schema
@@ -749,6 +761,28 @@ ${Object.keys(model.schema)
         });
     };`
                         )}
+
+    delete = () => new Promise<void>(
+        (resolve, reject) =>
+            this.db.run(
+                'DELETE FROM User WHERE ${
+                    Object.keys(model.schema)[
+                        Object.values(model.schema).findIndex(
+                            (value) => value._id
+                        )
+                    ]
+                } = ?',
+                [this._${
+                    Object.keys(model.schema)[
+                        Object.values(model.schema).findIndex(
+                            (value) => value._id
+                        )
+                    ]
+                }],
+                (error) =>
+                    error ? reject(error) : resolve()
+            )
+    );
 }
 
 export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
@@ -776,6 +810,8 @@ export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
             this.catch((error) => reject(error));
         });`
                         )}
+
+    delete = () => this.then((post) => post.delete());
 }
 
 export class ${model.name}sPromise extends Promise<${
@@ -815,6 +851,8 @@ export class ${model.name}sPromise extends Promise<${
             this.catch((error) => reject(error));
         });`
                         )}
+
+    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
 }
 
 `;

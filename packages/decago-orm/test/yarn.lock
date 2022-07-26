@@ -2,15 +2,15 @@
 # yarn lockfile v1
 
 
-"@decago/object-definition@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@decago/object-definition/-/object-definition-1.1.0.tgz#3fa098fdd8f8fbf1c0f5d47826a759ef1b0c3445"
-  integrity sha512-ANRFBn8dUeMIDR7ddAeAgfrBIPTX8Le9h63RB9KippLUBBjl/lv/9/st2ElmixtRkOjb0SAitQx83FUu89xIZw==
+"@decago/object-definition@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@decago/object-definition/-/object-definition-1.1.1.tgz#dc27de1b4a8412c90ad63bc11a56b0a9bbb40482"
+  integrity sha512-NwawN1fszQoi5wkD1Ju/f+Zb9f3KgrOx6fmlnmMs2MamGh2o0q+V8tnD9xxqdmU4bR737udiNL8aGShjnnW4fg==
 
 "@decago/orm@file:..":
-  version "1.1.0"
+  version "1.1.2"
   dependencies:
-    "@decago/object-definition" "^1.1.0"
+    "@decago/object-definition" "^1.1.1"
     "@decago/typescript-extractor" "^1.0.1"
     cli-highlight "^2.1.11"
     sqlite3 "^5.0.10"
