@@ -21,6 +21,7 @@ export default async function getUser(
             where: {
                 id: input.id,
             },
+            take: 1,
         })
     )[0];
 }
