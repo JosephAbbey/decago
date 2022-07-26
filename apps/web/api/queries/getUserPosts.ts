@@ -3,6 +3,8 @@ import db from '../../db/generated';
 
 export const getUserPostsInput = new t.Model('getUserPostsInput', {
     id: t.int(),
+    take: t.int(),
+    skip: t.int(),
 });
 
 export const getUserPostsOutput = t.listOf(
@@ -23,7 +25,10 @@ export default async function getUserPosts(
             },
         })
     )[0]
-        .posts()
+        .posts({
+            take: input.take,
+            skip: input.skip,
+        })
         .then((posts) =>
             posts.map((post) => ({
                 id: post.id,
