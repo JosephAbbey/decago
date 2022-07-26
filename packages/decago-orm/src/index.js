@@ -446,6 +446,9 @@ const doSelect = <T>(select: Select<T> | undefined) => [
         );
     }
 
+    private promises: Promise<undefined>[] = [];
+    save = () => Promise.all(this.promises);
+
     constructor(
         private db: sqlite.Database${Object.keys(model.schema)
             .filter(

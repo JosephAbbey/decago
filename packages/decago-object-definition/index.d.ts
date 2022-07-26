@@ -28,17 +28,21 @@ export namespace t {
           }>
         | ModelPromise;
 
-    export type infer<T> = T extends Object<infer X>
-        ? X
+    export type infer<T> = T extends Object<infer X, infer N>
+        ? N extends boolean
+            ? X | undefined
+            : X
         : T extends List<infer Y>
-        ? Y extends Object<infer X>
+        ? Y extends Object<infer X, infer N>
             ? X[]
             : Y extends Model<infer S>
             ? {
-                  [key in keyof S]: S[key] extends Object<infer X>
-                      ? X
+                  [key in keyof S]: S[key] extends Object<infer X, infer N>
+                      ? N extends boolean
+                          ? X | undefined
+                          : X
                       : S[key] extends List<infer Y>
-                      ? Y extends Object<infer X>
+                      ? Y extends Object<infer X, infer N>
                           ? X[]
                           : never
                       : never;
@@ -46,17 +50,24 @@ export namespace t {
             : never
         : T extends Model<infer S>
         ? {
-              [key in keyof S]: S[key] extends Object<infer X>
-                  ? X
+              [key in keyof S]: S[key] extends Object<infer X, infer N>
+                  ? N extends boolean
+                      ? X | undefined
+                      : X
                   : S[key] extends List<infer Y>
-                  ? Y extends Object<infer X>
+                  ? Y extends Object<infer X, infer N>
                       ? X[]
                       : Y extends Model<infer S>
                       ? {
-                            [key in keyof S]: S[key] extends Object<infer X>
-                                ? X
+                            [key in keyof S]: S[key] extends Object<
+                                infer X,
+                                infer N
+                            >
+                                ? N extends boolean
+                                    ? X | undefined
+                                    : X
                                 : S[key] extends List<infer Y>
-                                ? Y extends Object<infer X>
+                                ? Y extends Object<infer X, infer N>
                                     ? X[]
                                     : never
                                 : never;
@@ -64,19 +75,27 @@ export namespace t {
                       : never
                   : S[key] extends Model<infer S>
                   ? {
-                        [key in keyof S]: S[key] extends Object<infer X>
-                            ? X
+                        [key in keyof S]: S[key] extends Object<
+                            infer X,
+                            infer N
+                        >
+                            ? N extends boolean
+                                ? X | undefined
+                                : X
                             : S[key] extends List<infer Y>
-                            ? Y extends Object<infer X>
+                            ? Y extends Object<infer X, infer N>
                                 ? X[]
                                 : Y extends Model<infer S>
                                 ? {
                                       [key in keyof S]: S[key] extends Object<
-                                          infer X
+                                          infer X,
+                                          infer N
                                       >
-                                          ? X
+                                          ? N extends boolean
+                                              ? X | undefined
+                                              : X
                                           : S[key] extends List<infer Y>
-                                          ? Y extends Object<infer X>
+                                          ? Y extends Object<infer X, infer N>
                                               ? X[]
                                               : never
                                           : never;
@@ -88,16 +107,19 @@ export namespace t {
           }
         : never;
 
-    export class Object<T extends ScalarType> {
+    export class Object<
+        T extends ScalarType,
+        N extends boolean | undefined = undefined
+    > {
         type: ScalarTypeString;
         constructor(type: ScalarTypeString);
-        default: (data: T | (() => T)) => this;
+        default: (data: T | (() => T)) => Object<T, N>;
         _default?: T | (() => T);
-        unique: () => this;
+        unique: () => Object<T, N>;
         _unique?: boolean;
-        nullable: () => this;
-        _nullable?: boolean;
-        id: () => this;
+        nullable: () => Object<T, boolean>;
+        _nullable: N;
+        id: () => Object<T, N>;
         _id?: boolean;
     }
 
