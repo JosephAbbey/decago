@@ -81,6 +81,9 @@ export class Post {
         );
     }
 
+    private promises: Promise<undefined>[] = [];
+    save = () => Promise.all(this.promises);
+
     constructor(
         private db: sqlite.Database,
         private _id: number,
@@ -218,6 +221,9 @@ export class User {
             )
         );
     }
+
+    private promises: Promise<undefined>[] = [];
+    save = () => Promise.all(this.promises);
 
     constructor(
         private db: sqlite.Database,

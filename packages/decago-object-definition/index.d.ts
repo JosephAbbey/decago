@@ -4,10 +4,10 @@ export function now(): Date;
 export namespace t {
     export type ScalarType = number | string | boolean | Date;
     export type ScalarTypeObject =
-        | Object<number>
-        | Object<string>
-        | Object<boolean>
-        | Object<Date>;
+        | Object<number, boolean | undefined>
+        | Object<string, boolean | undefined>
+        | Object<boolean, boolean | undefined>
+        | Object<Date, boolean | undefined>;
     export type ScalarTypeString =
         | 'int'
         | 'float'
@@ -15,9 +15,9 @@ export namespace t {
         | 'boolean'
         | 'date';
     export type Type =
-        | Object<any>
+        | Object<any, boolean | undefined>
         | List<
-              | Object<any>
+              | Object<any, boolean | undefined>
               | Model<{
                     [key: string]: Type;
                 }>
