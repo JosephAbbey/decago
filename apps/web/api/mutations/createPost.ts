@@ -1,0 +1,39 @@
+import { t } from '@decago/object-definition';
+import db, { Post } from '../../db';
+
+export const createPostInput = new t.Model('createPostInput', {
+    title: t.string(),
+    content: t.string(),
+    authorId: t.int(),
+});
+
+export const createPostOutput = new t.Model('createPostOutput', {
+    id: t.int(),
+    title: t.string(),
+    content: t.string(),
+    authorId: t.int(),
+    createdAt: t.date(),
+    updatedAt: t.date(),
+});
+
+export default async function createPost(
+    input: t.infer<typeof createPostInput>
+): Promise<t.infer<typeof createPostOutput>> {
+    const post = await Post.create(
+        db.db,
+        undefined,
+        input.title,
+        input.content,
+        undefined,
+        undefined,
+        input.authorId
+    );
+    return {
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        authorId: post.authorId,
+    };
+}

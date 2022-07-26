@@ -1,5 +1,5 @@
 import { t } from '@decago/object-definition';
-import db from '../../db/generated';
+import db from '../../db';
 
 export const getPostsInput = new t.Model('getPostsInput', {
     take: t.int(),
