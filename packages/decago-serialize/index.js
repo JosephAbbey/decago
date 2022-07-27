@@ -3,7 +3,7 @@ module.exports = function (obj, serializers) {
         if (obj instanceof Array) {
             return obj.map(serialize);
         } else if (['string', 'number', 'boolean'].includes(typeof obj)) {
-        } else if (serializers.includes(obj.constructor.name)) {
+        } else if (serializers.hasOwnProperty(obj.constructor.name)) {
             var a = structuredClone(
                 serialize(serializers[obj.constructor.name](obj))
             );
@@ -24,7 +24,7 @@ module.deserialize = function (obj, deserializers) {
         if (obj instanceof Array) {
             return obj.map(deserialize);
         } else if (['string', 'number', 'boolean'].includes(typeof obj)) {
-        } else if (deserializers.includes(obj._name)) {
+        } else if (deserializers.hasOwnProperty(obj._name)) {
             var a = structuredClone(obj);
             delete a;
             return deserializers[obj._name](obj);
