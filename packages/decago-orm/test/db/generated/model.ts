@@ -71,8 +71,8 @@ export class Post {
                                                 row.id,
                                                 row.title,
                                                 row.content,
-                                                row.createdAt,
-                                                row.updatedAt,
+                                                new Date(row.createdAt),
+                                                new Date(row.updatedAt),
                                                 row.authorId
                                             )
                                         )
@@ -156,8 +156,8 @@ export class Post {
                                 this.db,
                                 result.id,
                                 result.name,
-                                result.createdAt,
-                                result.updatedAt
+                                new Date(result.createdAt),
+                                new Date(result.updatedAt)
                             )
                         );
                     }
@@ -227,8 +227,8 @@ export class User {
                                                 db,
                                                 row.id,
                                                 row.name,
-                                                row.createdAt,
-                                                row.updatedAt
+                                                new Date(row.createdAt),
+                                                new Date(row.updatedAt)
                                             )
                                         )
                           )
@@ -298,8 +298,8 @@ export class User {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        row.createdAt,
-                                        row.updatedAt,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt),
                                         row.authorId
                                     )
                             )
@@ -365,8 +365,8 @@ export class DB {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        row.createdAt,
-                                        row.updatedAt,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt),
                                         row.authorId
                                     )
                             )
@@ -390,8 +390,8 @@ export class DB {
                                         this.db,
                                         row.id,
                                         row.name,
-                                        row.createdAt,
-                                        row.updatedAt
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt)
                                     )
                             )
                         );

@@ -71,8 +71,8 @@ export class Post {
                                                 row.id,
                                                 row.title,
                                                 row.content,
-                                                row.createdAt,
-                                                row.updatedAt,
+                                                new Date(row.createdAt),
+                                                new Date(row.updatedAt),
                                                 row.authorId
                                             )
                                         )
@@ -156,8 +156,8 @@ export class Post {
                                 this.db,
                                 result.id,
                                 result.name,
-                                result.createdAt,
-                                result.updatedAt
+                                new Date(result.createdAt),
+                                new Date(result.updatedAt)
                             )
                         );
                     }
@@ -183,7 +183,7 @@ export class PostPromise extends Promise<Post> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((post) => post.delete());
+    delete = () => this.then((__Post) => __Post.delete());
 }
 
 export class PostsPromise extends Promise<Post[]> {
@@ -199,7 +199,7 @@ export class PostsPromise extends Promise<Post[]> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
+    delete = () => this.then((__Posts) => Promise.all(__Posts.map((__Post) => __Post.delete())));
 }
 
 export class User {
@@ -227,8 +227,8 @@ export class User {
                                                 db,
                                                 row.id,
                                                 row.name,
-                                                row.createdAt,
-                                                row.updatedAt
+                                                new Date(row.createdAt),
+                                                new Date(row.updatedAt)
                                             )
                                         )
                           )
@@ -298,8 +298,8 @@ export class User {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        row.createdAt,
-                                        row.updatedAt,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt),
                                         row.authorId
                                     )
                             )
@@ -328,7 +328,7 @@ export class UserPromise extends Promise<User> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((post) => post.delete());
+    delete = () => this.then((__User) => __User.delete());
 }
 
 export class UsersPromise extends Promise<User[]> {
@@ -344,7 +344,7 @@ export class UsersPromise extends Promise<User[]> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
+    delete = () => this.then((__Users) => Promise.all(__Users.map((__User) => __User.delete())));
 }
 
 export class DB {
@@ -365,8 +365,8 @@ export class DB {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        row.createdAt,
-                                        row.updatedAt,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt),
                                         row.authorId
                                     )
                             )
@@ -390,8 +390,8 @@ export class DB {
                                         this.db,
                                         row.id,
                                         row.name,
-                                        row.createdAt,
-                                        row.updatedAt
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt)
                                     )
                             )
                         );

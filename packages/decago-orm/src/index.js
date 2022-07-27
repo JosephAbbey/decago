@@ -29,6 +29,14 @@ module.exports = function main() {
                 boolean: 'boolean',
             };
 
+            const typescript_type_convert = {
+                int: (value) => value,
+                float: (value) => value,
+                string: (value) => value,
+                date: (value) => `new Date(${value})`,
+                boolean: (value) => value,
+            };
+
             if (data.default.type === 'sqlite') {
                 const sqlite = {
                     int: 'INTEGER',
@@ -420,7 +428,11 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                                     )
                                                     .map(
                                                         (key) =>
-                                                            `,\n                                                row.${key}`
+                                                            `,\n                                                ${typescript_type_convert[
+                                                                model.schema[
+                                                                    key
+                                                                ].type
+                                                            ](`row.${key}`)}`
                                                     )
                                                     .join('')}${Object.keys(
                         model.schema
@@ -438,8 +450,14 @@ const doSelect = <T>(select: Select<T> | undefined) => [
                                     data[model.schema[key].name].schema
                                 ).findIndex((value) => value._id)
                             ];
-                            return `,\n                                                row.${key}${capitalizeFirstLetter(
-                                identifier_name
+                            return `,\n                                                ${typescript_type_convert[
+                                data[model.schema[key].name].schema[
+                                    identifier_name
+                                ].type
+                            ](
+                                `row.${key}${capitalizeFirstLetter(
+                                    identifier_name
+                                )}`
                             )}`;
                         })
                         .join('')}
@@ -628,8 +646,11 @@ ${Object.keys(model.schema)
                                             )
                                     )
                                     .map(
-                                        (key) =>
-                                            `,\n                                result.${key}`
+                                        (k) =>
+                                            `,\n                                ${typescript_type_convert[
+                                                data[model.schema[key].name]
+                                                    .schema[k].type
+                                            ](`result.${k}`)}`
                                     )
                                     .join('')}${Object.keys(
                                 data[model.schema[key].name].schema
@@ -658,8 +679,14 @@ ${Object.keys(model.schema)
                                             ].schema
                                         ).findIndex((value) => value._id)
                                     ];
-                                    return `,\n                                result.${key}${capitalizeFirstLetter(
-                                        identifier_name
+                                    return `,\n                                ${typescript_type_convert[
+                                        data[model.schema[key].name].schema[
+                                            identifier_name
+                                        ].type
+                                    ](
+                                        `result.${key}${capitalizeFirstLetter(
+                                            identifier_name
+                                        )}`
                                     )}`;
                                 })
                                 .join('')}
@@ -717,8 +744,13 @@ ${Object.keys(model.schema)
                                                     )
                                             )
                                             .map(
-                                                (key) =>
-                                                    `,\n                                        row.${key}`
+                                                (k) =>
+                                                    `,\n                                        ${typescript_type_convert[
+                                                        data[
+                                                            model.schema[key].of
+                                                                .name
+                                                        ].schema[k].type
+                                                    ](`row.${k}`)}`
                                             )
                                             .join('')}${Object.keys(
                                     data[model.schema[key].of.name].schema
@@ -747,8 +779,19 @@ ${Object.keys(model.schema)
                                                 ].schema
                                             ).findIndex((value) => value._id)
                                         ];
-                                        return `,\n                                        row.${k}${capitalizeFirstLetter(
-                                            identifier_name
+                                        return `,\n                                        ${typescript_type_convert[
+                                            Object.values(
+                                                data[
+                                                    data[
+                                                        model.schema[key].of
+                                                            .name
+                                                    ].schema[k].name
+                                                ].schema
+                                            ).find((value) => value._id).type
+                                        ](
+                                            `row.${k}${capitalizeFirstLetter(
+                                                identifier_name
+                                            )}`
                                         )}`;
                                     })
                                     .join('')}
@@ -811,7 +854,7 @@ export class ${model.name}Promise extends Promise<${model.name}> {${Object.keys(
         });`
                         )}
 
-    delete = () => this.then((post) => post.delete());
+    delete = () => this.then((__${model.name}) => __${model.name}.delete());
 }
 
 export class ${model.name}sPromise extends Promise<${
@@ -852,7 +895,9 @@ export class ${model.name}sPromise extends Promise<${
         });`
                         )}
 
-    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
+    delete = () => this.then((__${model.name}s) => Promise.all(__${
+                        model.name
+                    }s.map((__${model.name}) => __${model.name}.delete())));
 }
 
 `;
@@ -893,7 +938,9 @@ ${Object.keys(data)
                                             )
                                             .map(
                                                 (k) =>
-                                                    `,\n                                        row.${k}`
+                                                    `,\n                                        ${typescript_type_convert[
+                                                        data[key].schema[k].type
+                                                    ](`row.${k}`)}`
                                             )
                                             .join('')}${Object.keys(
             data[key].schema
@@ -905,12 +952,18 @@ ${Object.keys(data)
             )
             .map(
                 (k) =>
-                    `,\n                                        row.${k}${capitalizeFirstLetter(
-                        Object.keys(data[data[key].schema[k].name].schema)[
-                            Object.values(
-                                data[data[key].schema[k].name].schema
-                            ).findIndex((value) => value._id)
-                        ]
+                    `,\n                                        ${typescript_type_convert[
+                        Object.values(
+                            data[data[key].schema[k].name].schema
+                        ).find((value) => value._id).type
+                    ](
+                        `row.${k}${capitalizeFirstLetter(
+                            Object.keys(data[data[key].schema[k].name].schema)[
+                                Object.values(
+                                    data[data[key].schema[k].name].schema
+                                ).findIndex((value) => value._id)
+                            ]
+                        )}`
                     )}`
             )
             .join('')}
