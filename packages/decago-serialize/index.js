@@ -1,4 +1,4 @@
-module.exports = function (obj, serializers) {
+module.exports.serialize = function (obj, serializers) {
     serializers = {
         Date: (date) => ({ value: date.toISOString() }),
         ...serializers,
@@ -24,7 +24,7 @@ module.exports = function (obj, serializers) {
     return serialize(obj);
 };
 
-module.deserialize = function (obj, deserializers) {
+module.exports.deserialize = function (obj, deserializers) {
     deserializers = {
         Date: (date) => new Date(date.value),
         ...deserializers,

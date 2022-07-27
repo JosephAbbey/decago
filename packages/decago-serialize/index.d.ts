@@ -1,4 +1,4 @@
-export default function serialize(
+export function serialize(
     obj: any,
     serializers: { [key: string]: (a: any) => any }
 ): any;

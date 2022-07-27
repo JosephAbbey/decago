@@ -1,5 +1,5 @@
 import { t } from '@decago/object-definition';
-import serialize, { deserialize } from '@decago/serialize';
+import { serialize, deserialize } from '@decago/serialize';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as rpc from '../../../api';
 import db from '../../../db';
