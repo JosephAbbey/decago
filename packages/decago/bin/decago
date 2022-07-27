@@ -2,7 +2,9 @@
 try {
     require('../dist/index.js').main();
 } catch {
-    const child = require('child_process').exec(command);
+    const child = require('child_process').exec(
+        `cd ${require('path').resolve(__dirname, '..')}; yarn build`
+    );
     child.stdout.setEncoding('utf8');
     child.stderr.setEncoding('utf8');
     child.stdout.on('data', (data) => console.log(data));
