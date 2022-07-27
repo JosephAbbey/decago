@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import * as orm from '@decago/orm/src';
+import { orm } from '@decago/orm';
 import rpc from './rpc';
 import { exec } from 'child_process';
 

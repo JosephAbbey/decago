@@ -12,6 +12,8 @@ export const getPostsOutput = t.listOf(
         title: t.string(),
         short_content: t.string(),
         authorId: t.int(),
+        createdAt: t.date(),
+        updatedAt: t.date(),
     })
 );
 
@@ -29,6 +31,8 @@ export default async function getPosts(
                 title: post.title,
                 short_content: post.content.substring(0, 100) + '...',
                 authorId: post.authorId,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
             }))
         );
 }
