@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "target": "ESNext",
+        "moduleResolution": "NodeNext",
+        "module": "UMD"
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["**/node_modules/**"]
+}

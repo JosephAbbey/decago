@@ -3,9 +3,9 @@
     "version": "1.1.1",
     "private": true,
     "scripts": {
-        "dev": "# decago dev",
-        "build": "# decago build",
-        "start": "# decago start"
+        "dev": "decago dev",
+        "build": "decago build",
+        "start": "decago start"
     },
     "dependencies": {
         "@decago/object-definition": "./packages/decago-object-definition",

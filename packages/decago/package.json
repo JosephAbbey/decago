@@ -3,8 +3,22 @@
     "version": "1.0.1",
     "main": "index.js",
     "license": "MIT",
+    "bin": {
+        "decago": "bin/decago"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/JosephAbbey/decago"
+    },
+    "scripts": {
+        "dev": "tsc --watch",
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    },
+    "dependencies": {
+        "commander": "^9.4.0",
+        "@decago/orm": "1.1.3",
+        "@decago/typescript-extractor": "1.0.1",
+        "next": "^12.2.3"
     }
 }
