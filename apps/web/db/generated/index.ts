@@ -71,8 +71,8 @@ export class Post {
                                                 row.id,
                                                 row.title,
                                                 row.content,
-                                                row.createdAt,
-                                                row.updatedAt,
+                                                new Date(row.createdAt),
+                                                new Date(row.updatedAt),
                                                 row.authorId
                                             )
                                         )
@@ -156,8 +156,9 @@ export class Post {
                                 this.db,
                                 result.id,
                                 result.name,
-                                result.createdAt,
-                                result.updatedAt
+                                result.email,
+                                new Date(result.createdAt),
+                                new Date(result.updatedAt)
                             )
                         );
                     }
@@ -183,7 +184,7 @@ export class PostPromise extends Promise<Post> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((post) => post.delete());
+    delete = () => this.then((__Post) => __Post.delete());
 }
 
 export class PostsPromise extends Promise<Post[]> {
@@ -199,7 +200,7 @@ export class PostsPromise extends Promise<Post[]> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
+    delete = () => this.then((__Posts) => Promise.all(__Posts.map((__Post) => __Post.delete())));
 }
 
 export class User {
@@ -207,13 +208,14 @@ export class User {
         db: sqlite.Database,
         _id: number | undefined,
         _name: string,
+        _email: string,
         _createdAt: Date | undefined,
         _updatedAt: Date | undefined
     ) {
         return new UserPromise((resolve, reject) =>
             db.run(
-                `INSERT INTO User (${["id", "name", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _createdAt, _updatedAt][i])).join(', ')}) VALUES (${["id", "name", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _createdAt, _updatedAt][i])).map(() => "?").join(', ')})`,
-                [_id, _name, _createdAt, _updatedAt].filter((v) => Boolean(v)),
+                `INSERT INTO User (${["id", "name", "email", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _email, _createdAt, _updatedAt][i])).join(', ')}) VALUES (${["id", "name", "email", "createdAt", "updatedAt"].filter((_, i) => Boolean([_id, _name, _email, _createdAt, _updatedAt][i])).map(() => "?").join(', ')})`,
+                [_id, _name, _email, _createdAt, _updatedAt].filter((v) => Boolean(v)),
                 (error) =>
                     error
                         ? reject(error)
@@ -227,8 +229,9 @@ export class User {
                                                 db,
                                                 row.id,
                                                 row.name,
-                                                row.createdAt,
-                                                row.updatedAt
+                                                row.email,
+                                                new Date(row.createdAt),
+                                                new Date(row.updatedAt)
                                             )
                                         )
                           )
@@ -243,6 +246,7 @@ export class User {
         private db: sqlite.Database,
         private _id: number,
         private _name: string,
+        private _email: string,
         private _createdAt: Date,
         private _updatedAt: Date
     ) {}
@@ -261,6 +265,14 @@ export class User {
     set name(value: string) {
         this._name = value;
         this.db.run('UPDATE User SET name = ? WHERE id = ?', value, this._id);
+    }
+
+    get email(): string {
+        return this._email;
+    }
+    set email(value: string) {
+        this._email = value;
+        this.db.run('UPDATE User SET email = ? WHERE id = ?', value, this._id);
     }
 
     get createdAt(): Date {
@@ -298,8 +310,8 @@ export class User {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        row.createdAt,
-                                        row.updatedAt,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt),
                                         row.authorId
                                     )
                             )
@@ -328,7 +340,7 @@ export class UserPromise extends Promise<User> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((post) => post.delete());
+    delete = () => this.then((__User) => __User.delete());
 }
 
 export class UsersPromise extends Promise<User[]> {
@@ -344,7 +356,7 @@ export class UsersPromise extends Promise<User[]> {
             this.catch((error) => reject(error));
         });
 
-    delete = () => this.then((posts) => Promise.all(posts.map((post) => post.delete())));
+    delete = () => this.then((__Users) => Promise.all(__Users.map((__User) => __User.delete())));
 }
 
 export class DB {
@@ -365,8 +377,8 @@ export class DB {
                                         row.id,
                                         row.title,
                                         row.content,
-                                        row.createdAt,
-                                        row.updatedAt,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt),
                                         row.authorId
                                     )
                             )
@@ -390,8 +402,9 @@ export class DB {
                                         this.db,
                                         row.id,
                                         row.name,
-                                        row.createdAt,
-                                        row.updatedAt
+                                        row.email,
+                                        new Date(row.createdAt),
+                                        new Date(row.updatedAt)
                                     )
                             )
                         );

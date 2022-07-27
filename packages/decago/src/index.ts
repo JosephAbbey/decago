@@ -1,6 +1,5 @@
 import { Command } from 'commander';
 import { orm } from '@decago/orm';
-import rpc from './rpc';
 import { exec } from 'child_process';
 
 function run(command: string) {
@@ -27,24 +26,9 @@ export function main() {
         .version(require('../package.json').version);
 
     program
-        .command('all')
-        .description("Run 'orm' and 'rpc'")
-        .action(() => {
-            orm();
-            rpc();
-        });
-
-    program
         .command('orm')
         .description('Generate SQL and TS for your database')
         .action(orm);
-
-    program
-        .command('rpc')
-        .description(
-            'Generate TS for your Remote Procedure Call Application Programming Interface'
-        )
-        .action(rpc);
 
     program
         .command('dev')

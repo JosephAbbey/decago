@@ -1,9 +1,9 @@
 export default function serialize(
     obj: any,
     serializers: { [key: string]: (a: any) => any }
-): string;
+): any;
 
 export function deserialize(
-    obj: string,
+    obj: any,
     deserializers: { [key: string]: (a: any) => any }
 ): any;

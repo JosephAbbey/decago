@@ -16,7 +16,8 @@ export const Post = new t.Model('Post', {
 
 export const User = new t.Model('User', {
     id: t.int().id().default(autoincremental),
-    name: t.string(),
+    name: t.string().unique(),
+    email: t.string().unique(),
     posts: t.listOf(Post),
     createdAt: t.date().default(now),
     updatedAt: t.date().default(now),

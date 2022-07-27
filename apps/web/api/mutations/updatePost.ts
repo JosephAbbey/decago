@@ -1,5 +1,5 @@
 import { t } from '@decago/object-definition';
-import db from '../../db';
+import { DB } from '../../db';
 
 export const updatePostInput = new t.Model('updatePostInput', {
     id: t.int(),
@@ -18,10 +18,11 @@ export const updatePostOutput = new t.Model('updatePostOutput', {
 });
 
 export default async function updatePost(
-    input: t.infer<typeof updatePostInput>
+    input: t.infer<typeof updatePostInput>,
+    context: { db: DB }
 ): Promise<t.infer<typeof updatePostOutput>> {
     const post = (
-        await db.Posts({
+        await context.db.Posts({
             where: {
                 id: input.id,
             },

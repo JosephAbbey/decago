@@ -1,8 +1,13 @@
 module.exports = function (obj, serializers) {
+    serializers = {
+        Date: (date) => ({ value: date.toISOString() }),
+        ...serializers,
+    };
     function serialize(obj) {
         if (obj instanceof Array) {
             return obj.map(serialize);
         } else if (['string', 'number', 'boolean'].includes(typeof obj)) {
+            return obj;
         } else if (serializers.hasOwnProperty(obj.constructor.name)) {
             var a = structuredClone(
                 serialize(serializers[obj.constructor.name](obj))
@@ -16,14 +21,19 @@ module.exports = function (obj, serializers) {
             }, {});
         }
     }
-    return JSON.stringify(serialize(obj));
+    return serialize(obj);
 };
 
 module.deserialize = function (obj, deserializers) {
+    deserializers = {
+        Date: (date) => new Date(date.value),
+        ...deserializers,
+    };
     function deserialize(obj) {
         if (obj instanceof Array) {
             return obj.map(deserialize);
         } else if (['string', 'number', 'boolean'].includes(typeof obj)) {
+            return obj;
         } else if (deserializers.hasOwnProperty(obj._name)) {
             var a = structuredClone(obj);
             delete a;
@@ -35,5 +45,5 @@ module.deserialize = function (obj, deserializers) {
             }, {});
         }
     }
-    return deserialize(JSON.parse(obj));
+    return deserialize(obj);
 };

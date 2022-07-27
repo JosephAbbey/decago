@@ -1,5 +1,5 @@
 import { t } from '@decago/object-definition';
-import db from '../../db';
+import { DB } from '../../db';
 
 export const getUserInput = new t.Model('getUserInput', {
     id: t.int(),
@@ -8,15 +8,17 @@ export const getUserInput = new t.Model('getUserInput', {
 export const getUserOutput = new t.Model('getUserOutput', {
     id: t.int(),
     name: t.string(),
+    email: t.string(),
     createdAt: t.date(),
     updatedAt: t.date(),
 });
 
 export default async function getUser(
-    input: t.infer<typeof getUserInput>
+    input: t.infer<typeof getUserInput>,
+    context: { db: DB }
 ): Promise<t.infer<typeof getUserOutput>> {
     const user = (
-        await db.Users({
+        await context.db.Users({
             where: {
                 id: input.id,
             },
@@ -26,6 +28,7 @@ export default async function getUser(
     return {
         id: user.id,
         name: user.name,
+        email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     };

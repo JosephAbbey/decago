@@ -1,6 +1,6 @@
 {
-  "name": "@decago/serialize",
-  "version": "1.2.3",
-  "main": "index.js",
-  "license": "MIT"
+    "name": "@decago/serialize",
+    "version": "1.2.3",
+    "main": "index.js",
+    "license": "MIT"
 }
