@@ -109,7 +109,7 @@ module.exports = function main() {
                         } else {
                             sql += `    ${field} ${sqlite[fieldSchema.type]}${
                                 fieldSchema._nullable ? '' : ' NOT NULL'
-                            }${fieldSchema._unique ? '' : ' UNIQUE'}${
+                            }${fieldSchema._unique ? ' UNIQUE' : ''}${
                                 fieldSchema._id ? ' PRIMARY KEY' : ''
                             }${
                                 fieldSchema._default === undefined
