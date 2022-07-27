@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { orm } from '@decago/orm';
 import rpc from './rpc';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 
 export function main() {
     const program = new Command();
@@ -38,7 +38,7 @@ export function main() {
         )
         .option('-p, --port <port>', 'Port to listen on', parseInt, 3000)
         .action((options) => {
-            exec('npx next dev -p ' + options.port);
+            spawn('npx', [ 'next', 'dev', '-p', options.port]);
         });
 
     program
@@ -47,7 +47,7 @@ export function main() {
             'Creates an optimized production build of your application'
         )
         .action(() => {
-            exec('npx next build');
+            spawn('npx', [ 'next', 'build']);
         });
 
     program
@@ -55,7 +55,7 @@ export function main() {
         .description('Starts the application in production mode')
         .option('-p, --port <port>', 'Port to listen on', parseInt, 3000)
         .action((options) => {
-            exec('npx next start -p ' + options.port);
+            spawn('npx', [ 'next', 'start', '-p', options.port]);
         });
 
     program.parse();
