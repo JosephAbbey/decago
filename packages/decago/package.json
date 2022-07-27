@@ -12,7 +12,8 @@
     },
     "scripts": {
         "dev": "tsc --watch",
-        "build": "tsc"
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
     },
     "dependencies": {
         "@decago/orm": "^1.2.0",
