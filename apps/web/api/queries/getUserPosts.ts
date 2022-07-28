@@ -2,7 +2,7 @@ import { t } from '@decago/object-definition';
 import { DB } from '../../db';
 
 export const getUserPostsInput = new t.Model('getUserPostsInput', {
-    id: t.int(),
+    id: t.int().nullable(),
     take: t.int(),
     skip: t.int(),
 });
@@ -20,6 +20,7 @@ export default async function getUserPosts(
     input: t.infer<typeof getUserPostsInput>,
     context: { db: DB }
 ): Promise<t.infer<typeof getUserPostsOutput>> {
+    if (input.id === null || typeof input.id === 'undefined') return [];
     return (
         await context.db.Users({
             where: {
@@ -35,7 +36,9 @@ export default async function getUserPosts(
             posts.map((post) => ({
                 id: post.id,
                 title: post.title,
-                short_content: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
+                short_content:
+                    post.content.substring(0, 100) +
+                    (post.content.length > 100 ? '...' : ''),
                 authorId: post.authorId,
             }))
         );

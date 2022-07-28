@@ -2,7 +2,7 @@ import { t } from '@decago/object-definition';
 import { DB } from '../../db';
 
 export const getPostInput = new t.Model('getPostInput', {
-    id: t.int(),
+    id: t.int().nullable(),
 });
 
 export const getPostOutput = new t.Model('getPostOutput', {
@@ -14,12 +14,13 @@ export const getPostOutput = new t.Model('getPostOutput', {
     authorEmail: t.string(),
     createdAt: t.date(),
     updatedAt: t.date(),
-});
+}).nullable();
 
 export default async function getPost(
     input: t.infer<typeof getPostInput>,
     context: { db: DB }
 ): Promise<t.infer<typeof getPostOutput>> {
+    if (input.id === null || typeof input.id === 'undefined') return undefined;
     const post = (
         await context.db.Posts({
             where: {

@@ -6,20 +6,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import useCurrentUser from '../../api/hooks/useCurrentUser';
+import Error from 'next/error';
 
 export default function Home(props: {}) {
     const router = useRouter();
     const currentUser = useCurrentUser();
-    if (
-        router.query.user instanceof Array ||
-        typeof router.query.user === 'undefined'
-    )
-        throw new Error('Invalid user id');
-    const userId = parseInt(router.query.user);
+    const userId =
+        parseInt(
+            (router.query.user instanceof Array
+                ? router.query.user[0]
+                : router.query.user) || ''
+        ) || undefined;
     const [user] = useQuery(getUser, {
         id: userId,
     });
     const [posts] = useQuery(getUserPosts, { id: userId, skip: 0, take: 10 });
+
+    if (typeof userId === 'undefined') return <Error statusCode={404} />;
+    if (typeof user === 'undefined') return <Error statusCode={404} />;
 
     return (
         <>
@@ -39,8 +43,7 @@ export default function Home(props: {}) {
                         height={50}
                     />
                     <span style={{ marginLeft: '.5em' }}>
-                        {user?.name}{' '}
-                        {user?.id === currentUser?.id ? '(You)' : ''}
+                        {user.name} {user.id === currentUser?.id ? '(You)' : ''}
                     </span>
                 </span>
             </h1>
