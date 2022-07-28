@@ -273,13 +273,13 @@ export namespace t {
         type: ScalarTypeString;
         constructor(type: ScalarTypeString);
         default: (data: T | (() => T)) => Object<T, N>;
-        _default?: T | (() => T);
+        private _default?: T | (() => T);
         unique: () => Object<T, N>;
-        _unique?: boolean;
+        private _unique?: boolean;
         nullable: () => Object<T, boolean>;
-        _nullable: N;
+        private _nullable: N;
         id: () => Object<T, N>;
-        _id?: boolean;
+        private _id?: boolean;
     }
 
     export class List<
@@ -317,7 +317,7 @@ export namespace t {
     > {
         name: string;
         schema: S;
-        _nullable: N;
+        private _nullable: N;
         constructor(name: string, schema: S);
         nullable(): Model<S, boolean>;
     }
