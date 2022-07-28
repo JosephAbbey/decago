@@ -3,9 +3,9 @@
     "version": "1.4.0",
     "private": true,
     "scripts": {
-        "dev": "decago dev",
-        "build": "decago build",
-        "start": "decago start"
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start"
     },
     "dependencies": {
         "@decago/object-definition": "./packages/decago-object-definition",

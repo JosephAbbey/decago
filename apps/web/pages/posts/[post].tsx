@@ -21,28 +21,38 @@ export default function Home(props: {}) {
         <>
             <h1>
                 {post?.title}
-                <span
-                    style={{
-                        float: 'right',
-                        fontSize: '1.5rem',
-                        fontWeight: '100',
-                        display: 'inline-flex',
-                        alignItems: 'center',
+                <Link
+                    href={{
+                        pathname: '/users/[user]',
+                        query: { user: post?.authorId },
                     }}
                 >
-                    <Image
-                        src={`https://www.gravatar.com/avatar/${md5(
-                            String(post?.authorEmail).trim().toLowerCase()
-                        )}`}
-                        alt=""
-                        width={24}
-                        height={24}
-                    />
-                    <i style={{ marginLeft: '0.5em' }}>{post?.authorName}</i>
-                </span>
+                    <span
+                        style={{
+                            float: 'right',
+                            fontSize: '1.5rem',
+                            fontWeight: '100',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <Image
+                            src={`https://www.gravatar.com/avatar/${md5(
+                                String(post?.authorEmail).trim().toLowerCase()
+                            )}`}
+                            alt=""
+                            width={24}
+                            height={24}
+                        />
+                        <i style={{ marginLeft: '0.5em' }}>
+                            {post?.authorName}
+                        </i>
+                    </span>
+                </Link>
             </h1>
             <i style={{ fontSize: '0.75em' }}>
-                {post?.createdAt.toISOString()}
+                {post?.createdAt.toDateString()}
             </i>
             <p>{post?.content}</p>
         </>

@@ -1,5 +1,5 @@
 import { t } from '@decago/object-definition';
-import { User, DB } from '../../db';
+import { DB } from '../../db';
 
 export const createUserInput = new t.Model('createUserInput', {
     name: t.string(),
@@ -18,7 +18,7 @@ export default async function createUser(
     input: t.infer<typeof createUserInput>,
     context: { db: DB }
 ): Promise<t.infer<typeof createUserOutput>> {
-    const user = await User.create(
+    const user = await context.db.User.create(
         context.db.db,
         undefined,
         input.name,

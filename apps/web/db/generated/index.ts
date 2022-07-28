@@ -14,34 +14,45 @@ export interface Select<T> {
     take?: number;
 }
 
-const doSelect = <T>(select: Select<T> | undefined) => [
-    select?.where
-        ? 'WHERE ' +
-          Object.keys(select.where)
-              .map(
-                  (key) =>
-                      `${key} = ${
-                          //@ts-ignore
-                          select.where[key]
-                      }`
-              )
-              .join(' AND ')
-        : '',
-    select?.orderBy
-        ? 'ORDER BY ' +
-          Object.keys(select.orderBy)
-              .map(
-                  (key) =>
-                      `${key} ${
-                          //@ts-ignore
-                          select.orderBy[key]
-                      }`
-              )
-              .join(', ')
-        : 'ORDER BY (SELECT NULL)',
-    `LIMIT (${select?.take || defaultTake})`,
-    `OFFSET (${select?.skip || defaultSkip})`,
-];
+const doSelect = <T>(
+    db: sqlite.Database,
+    table: string,
+    select: Select<T> | undefined,
+    callback: (err: Error, rows: any[]) => void
+) => {
+    const params = [];
+    const command = [
+        `${
+            select?.where
+                ? 'WHERE ' +
+                  Object.keys(select.where)
+                      .map((key) => {
+                          params.push(
+                              //@ts-expect-error
+                              select.where[key] || "null"
+                          );
+                          return `${key} = ?`;
+                      })
+                      .join(' AND ')
+                : ''
+        } ${
+            select?.orderBy
+                ? 'ORDER BY ' +
+                  Object.keys(select.orderBy)
+                      .map((key) => {
+                          params.push(
+                              //@ts-expect-error
+                              select.orderBy[key] || 'null'
+                          );
+                          return `${key} ?`;
+                      })
+                      .join(', ')
+                : 'ORDER BY (SELECT NULL)'
+        } LIMIT ? OFFSET ?`,
+    ];
+    params.push(select?.take ?? defaultTake, select?.skip ?? defaultSkip);
+    db.all(`SELECT * FROM ${table} ${command}`, params, callback);
+};
 
 export class Post {
     static create(
@@ -296,8 +307,10 @@ export class User {
         select.where = select.where || {};
         select.where.authorId = this._id;
         return new PostsPromise((resolve, reject) => {
-            this.db.all(
-                'SELECT * FROM Post ' + doSelect(select).join(' '),
+            doSelect(
+                this.db,
+                'Post',
+                select,
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -361,10 +374,13 @@ export class UsersPromise extends Promise<User[]> {
 
 export class DB {
     public db: sqlite.Database = new sqlite.Database('C:\\Users\\Joseph\\code\\javascript\\decago\\apps\\web\\db\\data.sqlite');
+    Post = Post
     Posts = (select?: Select<Post>) =>
         new PostsPromise((resolve, reject) => {
-            this.db.all(
-                'SELECT * FROM Post ' + doSelect(select).join(' '),
+            doSelect(
+                this.db,
+                'Post',
+                select,
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -387,10 +403,13 @@ export class DB {
                 }
             );
         });
+    User = User
     Users = (select?: Select<User>) =>
         new UsersPromise((resolve, reject) => {
-            this.db.all(
-                'SELECT * FROM User ' + doSelect(select).join(' '),
+            doSelect(
+                this.db,
+                'User',
+                select,
                 (err, rows) => {
                     if (err) {
                         reject(err);

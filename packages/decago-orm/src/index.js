@@ -162,34 +162,45 @@ export interface Select<T> {
     take?: number;
 }
 
-const doSelect = <T>(select: Select<T> | undefined) => [
-    select?.where
-        ? 'WHERE ' +
-          Object.keys(select.where)
-              .map(
-                  (key) =>
-                      \`\${key} = \${
-                          //@ts-ignore
-                          select.where[key]
-                      }\`
-              )
-              .join(' AND ')
-        : '',
-    select?.orderBy
-        ? 'ORDER BY ' +
-          Object.keys(select.orderBy)
-              .map(
-                  (key) =>
-                      \`\${key} \${
-                          //@ts-ignore
-                          select.orderBy[key]
-                      }\`
-              )
-              .join(', ')
-        : 'ORDER BY (SELECT NULL)',
-    \`LIMIT (\${select?.take || defaultTake})\`,
-    \`OFFSET (\${select?.skip || defaultSkip})\`,
-];
+const doSelect = <T>(
+    db: sqlite.Database,
+    table: string,
+    select: Select<T> | undefined,
+    callback: (err: Error, rows: any[]) => void
+) => {
+    const params = [];
+    const command = [
+        \`\${
+            select?.where
+                ? 'WHERE ' +
+                  Object.keys(select.where)
+                      .map((key) => {
+                          params.push(
+                              //@ts-ignore
+                              select.where[key] || "null"
+                          );
+                          return \`\${key} = ?\`;
+                      })
+                      .join(' AND ')
+                : ''
+        } \${
+            select?.orderBy
+                ? 'ORDER BY ' +
+                  Object.keys(select.orderBy)
+                      .map((key) => {
+                          params.push(
+                              //@ts-ignore
+                              select.orderBy[key]
+                          );
+                          return \`\${key} ?\`;
+                      })
+                      .join(', ')
+                : 'ORDER BY (SELECT NULL)'
+        } LIMIT ? OFFSET ?\`,
+    ];
+    params.push(select?.take ?? defaultTake, select?.skip ?? defaultSkip);
+    db.all(\`SELECT * FROM \${table} \${command}\`, params, callback);
+};
 
 `;
 
@@ -707,10 +718,10 @@ ${Object.keys(model.schema)
         select.where = select.where || {};
         select.where.authorId = this._id;
         return new ${model.schema[key].of.name}sPromise((resolve, reject) => {
-            this.db.all(
-                'SELECT * FROM ${
-                    model.schema[key].of.name
-                } ' + doSelect(select).join(' '),
+            doSelect(
+                this.db,
+                '${model.schema[key].of.name}',
+                select,
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -908,10 +919,13 @@ export class ${model.name}sPromise extends Promise<${
 ${Object.keys(data)
     .filter((key) => key !== 'default')
     .map((key) => {
-        return `    ${key}s = (select?: Select<${key}>) =>
+        return `    ${key} = ${key};
+    ${key}s = (select?: Select<${key}>) =>
         new ${key}sPromise((resolve, reject) => {
-            this.db.all(
-                'SELECT * FROM ${key} ' + doSelect(select).join(' '),
+            doSelect(
+                this.db,
+                '${key}',
+                select,
                 (err, rows) => {
                     if (err) {
                         reject(err);

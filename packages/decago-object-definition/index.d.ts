@@ -28,6 +28,7 @@ export namespace t {
           }>
         | ModelPromise;
 
+    // this is mad
     export type infer<T> = T extends Object<infer X, infer N>
         ? N extends boolean
             ? X | undefined
@@ -35,7 +36,7 @@ export namespace t {
         : T extends List<infer Y>
         ? Y extends Object<infer X, infer N>
             ? X[]
-            : Y extends Model<infer S>
+            : Y extends Model<infer S, infer M>
             ? {
                   [key in keyof S]: S[key] extends Object<infer X, infer N>
                       ? N extends boolean
@@ -48,33 +49,10 @@ export namespace t {
                       : never;
               }[]
             : never
-        : T extends Model<infer S>
-        ? {
-              [key in keyof S]: S[key] extends Object<infer X, infer N>
-                  ? N extends boolean
-                      ? X | undefined
-                      : X
-                  : S[key] extends List<infer Y>
-                  ? Y extends Object<infer X, infer N>
-                      ? X[]
-                      : Y extends Model<infer S>
-                      ? {
-                            [key in keyof S]: S[key] extends Object<
-                                infer X,
-                                infer N
-                            >
-                                ? N extends boolean
-                                    ? X | undefined
-                                    : X
-                                : S[key] extends List<infer Y>
-                                ? Y extends Object<infer X, infer N>
-                                    ? X[]
-                                    : never
-                                : never;
-                        }[]
-                      : never
-                  : S[key] extends Model<infer S>
-                  ? {
+        : T extends Model<infer S, infer M>
+        ? M extends boolean
+            ?
+                  | {
                         [key in keyof S]: S[key] extends Object<
                             infer X,
                             infer N
@@ -85,7 +63,7 @@ export namespace t {
                             : S[key] extends List<infer Y>
                             ? Y extends Object<infer X, infer N>
                                 ? X[]
-                                : Y extends Model<infer S>
+                                : Y extends Model<infer S, infer M>
                                 ? {
                                       [key in keyof S]: S[key] extends Object<
                                           infer X,
@@ -101,10 +79,191 @@ export namespace t {
                                           : never;
                                   }[]
                                 : never
+                            : S[key] extends Model<infer S, infer M>
+                            ? M extends boolean
+                                ?
+                                      | {
+                                            [key in keyof S]: S[key] extends Object<
+                                                infer X,
+                                                infer N
+                                            >
+                                                ? N extends boolean
+                                                    ? X | undefined
+                                                    : X
+                                                : S[key] extends List<infer Y>
+                                                ? Y extends Object<
+                                                      infer X,
+                                                      infer N
+                                                  >
+                                                    ? X[]
+                                                    : Y extends Model<
+                                                          infer S,
+                                                          infer M
+                                                      >
+                                                    ? {
+                                                          [key in keyof S]: S[key] extends Object<
+                                                              infer X,
+                                                              infer N
+                                                          >
+                                                              ? N extends boolean
+                                                                  ?
+                                                                        | X
+                                                                        | undefined
+                                                                  : X
+                                                              : S[key] extends List<
+                                                                    infer Y
+                                                                >
+                                                              ? Y extends Object<
+                                                                    infer X,
+                                                                    infer N
+                                                                >
+                                                                  ? X[]
+                                                                  : never
+                                                              : never;
+                                                      }[]
+                                                    : never
+                                                : never;
+                                        }
+                                      | undefined
+                                : {
+                                      [key in keyof S]: S[key] extends Object<
+                                          infer X,
+                                          infer N
+                                      >
+                                          ? N extends boolean
+                                              ? X | undefined
+                                              : X
+                                          : S[key] extends List<infer Y>
+                                          ? Y extends Object<infer X, infer N>
+                                              ? X[]
+                                              : Y extends Model<
+                                                    infer S,
+                                                    infer M
+                                                >
+                                              ? {
+                                                    [key in keyof S]: S[key] extends Object<
+                                                        infer X,
+                                                        infer N
+                                                    >
+                                                        ? N extends boolean
+                                                            ? X | undefined
+                                                            : X
+                                                        : S[key] extends List<
+                                                              infer Y
+                                                          >
+                                                        ? Y extends Object<
+                                                              infer X,
+                                                              infer N
+                                                          >
+                                                            ? X[]
+                                                            : never
+                                                        : never;
+                                                }[]
+                                              : never
+                                          : never;
+                                  }
                             : never;
                     }
-                  : never;
-          }
+                  | undefined
+            : {
+                  [key in keyof S]: S[key] extends Object<infer X, infer N>
+                      ? N extends boolean
+                          ? X | undefined
+                          : X
+                      : S[key] extends List<infer Y>
+                      ? Y extends Object<infer X, infer N>
+                          ? X[]
+                          : Y extends Model<infer S, infer M>
+                          ? {
+                                [key in keyof S]: S[key] extends Object<
+                                    infer X,
+                                    infer N
+                                >
+                                    ? N extends boolean
+                                        ? X | undefined
+                                        : X
+                                    : S[key] extends List<infer Y>
+                                    ? Y extends Object<infer X, infer N>
+                                        ? X[]
+                                        : never
+                                    : never;
+                            }[]
+                          : never
+                      : S[key] extends Model<infer S, infer M>
+                      ? M extends boolean
+                          ?
+                                | {
+                                      [key in keyof S]: S[key] extends Object<
+                                          infer X,
+                                          infer N
+                                      >
+                                          ? N extends boolean
+                                              ? X | undefined
+                                              : X
+                                          : S[key] extends List<infer Y>
+                                          ? Y extends Object<infer X, infer N>
+                                              ? X[]
+                                              : Y extends Model<
+                                                    infer S,
+                                                    infer M
+                                                >
+                                              ? {
+                                                    [key in keyof S]: S[key] extends Object<
+                                                        infer X,
+                                                        infer N
+                                                    >
+                                                        ? N extends boolean
+                                                            ? X | undefined
+                                                            : X
+                                                        : S[key] extends List<
+                                                              infer Y
+                                                          >
+                                                        ? Y extends Object<
+                                                              infer X,
+                                                              infer N
+                                                          >
+                                                            ? X[]
+                                                            : never
+                                                        : never;
+                                                }[]
+                                              : never
+                                          : never;
+                                  }
+                                | undefined
+                          : {
+                                [key in keyof S]: S[key] extends Object<
+                                    infer X,
+                                    infer N
+                                >
+                                    ? N extends boolean
+                                        ? X | undefined
+                                        : X
+                                    : S[key] extends List<infer Y>
+                                    ? Y extends Object<infer X, infer N>
+                                        ? X[]
+                                        : Y extends Model<infer S, infer M>
+                                        ? {
+                                              [key in keyof S]: S[key] extends Object<
+                                                  infer X,
+                                                  infer N
+                                              >
+                                                  ? N extends boolean
+                                                      ? X | undefined
+                                                      : X
+                                                  : S[key] extends List<infer Y>
+                                                  ? Y extends Object<
+                                                        infer X,
+                                                        infer N
+                                                    >
+                                                      ? X[]
+                                                      : never
+                                                  : never;
+                                          }[]
+                                        : never
+                                    : never;
+                            }
+                      : never;
+              }
         : never;
 
     export class Object<
@@ -153,13 +312,14 @@ export namespace t {
     export class Model<
         S extends {
             [key: string]: Type;
-        }
+        },
+        N extends boolean | undefined = undefined
     > {
         name: string;
         schema: S;
-        _nullable: boolean;
+        _nullable: N;
         constructor(name: string, schema: S);
-        nullable(): this;
+        nullable(): Model<S, boolean>;
     }
 
     export class ModelPromise {

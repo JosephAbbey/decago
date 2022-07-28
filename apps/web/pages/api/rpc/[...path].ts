@@ -3,6 +3,7 @@ import { serialize, deserialize } from '@decago/serialize';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as rpc from '../../../api';
 import db from '../../../db';
+import { Cookies } from 'decago';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return new Promise<void>((resolve, reject) => {
@@ -29,7 +30,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                 | undefined = rpc.mutations[path[1]];
             if (typeof mutation !== 'undefined') {
                 mutation
-                    .default(deserialize(req.body, {}), { db })
+                    .default(deserialize(req.body, {}), {
+                        db,
+                        cookies: new Cookies(req, res),
+                    })
                     .then((result) => {
                         res.status(200).json(serialize(result, {}));
                         resolve();
@@ -52,7 +56,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                 | undefined = rpc.queries[path[1]];
             if (typeof query !== 'undefined') {
                 query
-                    .default(deserialize(req.body, {}), { db })
+                    .default(deserialize(req.body, {}), {
+                        db,
+                        cookies: new Cookies(req, res),
+                    })
                     .then((result) => {
                         res.status(200).json(serialize(result, {}));
                         resolve();

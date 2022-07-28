@@ -35,7 +35,7 @@ export default async function getUserPosts(
             posts.map((post) => ({
                 id: post.id,
                 title: post.title,
-                short_content: post.content.substring(0, 100) + '...',
+                short_content: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
                 authorId: post.authorId,
             }))
         );

@@ -1,5 +1,5 @@
 import { t } from '@decago/object-definition';
-import { Post, DB } from '../../db';
+import { DB } from '../../db';
 
 export const createPostInput = new t.Model('createPostInput', {
     title: t.string(),
@@ -20,7 +20,7 @@ export default async function createPost(
     input: t.infer<typeof createPostInput>,
     context: { db: DB }
 ): Promise<t.infer<typeof createPostOutput>> {
-    const post = await Post.create(
+    const post = await context.db.Post.create(
         context.db.db,
         undefined,
         input.title,
