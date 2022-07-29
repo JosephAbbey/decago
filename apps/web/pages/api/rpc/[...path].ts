@@ -3,6 +3,8 @@ import { serialize, deserialize } from '@decago/serialize';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as rpc from '../../../api';
 import db from '../../../db';
+import * as fs from 'fs';
+import process from 'process';
 import { Cookies } from 'decago';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -32,6 +34,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                 mutation
                     .default(deserialize(req.body, {}), {
                         db,
+                        fs,
+                        process,
                         cookies: new Cookies(req, res),
                     })
                     .then((result) => {
@@ -58,6 +62,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                 query
                     .default(deserialize(req.body, {}), {
                         db,
+                        fs,
+                        process,
                         cookies: new Cookies(req, res),
                     })
                     .then((result) => {
