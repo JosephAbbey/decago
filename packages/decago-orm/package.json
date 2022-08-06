@@ -1,14 +1,14 @@
 {
     "name": "@decago/orm",
-    "version": "1.5.1",
+    "version": "1.6.0",
     "main": "index.js",
     "license": "MIT",
     "bin": {
         "decago-orm": "bin/decago-orm"
     },
     "dependencies": {
-        "@decago/object-definition": "^1.5.1",
-        "@decago/typescript-extractor": "^1.0.1",
+        "@decago/object-definition": "^1.6.0",
+        "@decago/typescript-extractor": "^1.6.0",
         "cli-highlight": "^2.1.11",
         "sqlite3": "^5.0.10",
         "tempy": "^3.0.0",
