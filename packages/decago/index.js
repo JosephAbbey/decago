@@ -24,6 +24,7 @@ module.exports.useQuery = function useQuery(query, input) {
                     res.json().then((data) => {
                         setData(deserialize(data, {}));
                         setIsLoading(false);
+                        setIsError(false);
                     })
                 )
                 .catch(() => {
@@ -86,6 +87,7 @@ module.exports.useMutation = function useMutation(mutation, input) {
                     res.json().then((data) => {
                         setData(deserialize(data, {}));
                         setIsLoading(false);
+                        setIsError(false);
                     })
                 )
                 .catch(() => {

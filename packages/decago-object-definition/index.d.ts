@@ -29,6 +29,7 @@ export namespace t {
         | ModelPromise;
 
     // this is mad
+    //#region infer<T>
     export type infer<T> = T extends Object<infer X, infer N>
         ? N extends boolean
             ? X | undefined
@@ -45,6 +46,21 @@ export namespace t {
                       : S[key] extends List<infer Y>
                       ? Y extends Object<infer X, infer N>
                           ? X[]
+                          : Y extends Model<infer S, infer M>
+                          ? {
+                                [key in keyof S]: S[key] extends Object<
+                                    infer X,
+                                    infer N
+                                >
+                                    ? N extends boolean
+                                        ? X | undefined
+                                        : X
+                                    : S[key] extends List<infer Y>
+                                    ? Y extends Object<infer X, infer N>
+                                        ? X[]
+                                        : never
+                                    : never;
+                            }[]
                           : never
                       : never;
               }[]
@@ -265,6 +281,7 @@ export namespace t {
                       : never;
               }
         : never;
+    //#endregion
 
     export class Object<
         T extends ScalarType,

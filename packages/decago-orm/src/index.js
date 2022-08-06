@@ -16,6 +16,8 @@ module.exports = function main() {
         )
     ).then(
         async (data) => {
+            console.log(`data:\n${inspect(data, undefined, 20, true)}\n`);
+
             const source = normalize(
                 resolve('./db/schema.ts', '../', data.default.source)
             ).replaceAll('\\', '\\\\');
@@ -819,13 +821,13 @@ ${Object.keys(model.schema)
     delete = () => new Promise<void>(
         (resolve, reject) =>
             this.db.run(
-                'DELETE FROM User WHERE ${
-                    Object.keys(model.schema)[
-                        Object.values(model.schema).findIndex(
-                            (value) => value._id
-                        )
-                    ]
-                } = ?',
+                'DELETE FROM ${model.name} WHERE ${
+                        Object.keys(model.schema)[
+                            Object.values(model.schema).findIndex(
+                                (value) => value._id
+                            )
+                        ]
+                    } = ?',
                 [this._${
                     Object.keys(model.schema)[
                         Object.values(model.schema).findIndex(

@@ -1,13 +1,16 @@
-import { useQuery } from 'decago';
+import { dispatchMutation, useQuery } from 'decago';
 import getPost from '../../api/queries/getPost';
 import md5 from 'md5';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import Error from 'next/error';
+import useCurrentUser from '../../api/hooks/useCurrentUser';
+import deletePost from '../../api/mutations/deletePost';
 
 export default function Home(props: {}) {
     const router = useRouter();
+    const currentUser = useCurrentUser();
     const postId =
         parseInt(
             (router.query.post instanceof Array
@@ -49,9 +52,7 @@ export default function Home(props: {}) {
                             width={24}
                             height={24}
                         />
-                        <i style={{ marginLeft: '0.5em' }}>
-                            {post.authorName}
-                        </i>
+                        <i style={{ marginLeft: '0.5em' }}>{post.authorName}</i>
                     </span>
                 </Link>
             </h1>
@@ -59,6 +60,18 @@ export default function Home(props: {}) {
                 {post.createdAt.toDateString()}
             </i>
             <p>{post.content}</p>
+
+            {currentUser && currentUser.id === post.authorId && (
+                <button
+                    onClick={() =>
+                        dispatchMutation(deletePost, {
+                            id: post.id,
+                        }).then(() => router.push('/'))
+                    }
+                >
+                    delete
+                </button>
+            )}
         </>
     );
 }

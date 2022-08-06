@@ -180,7 +180,7 @@ export class Post {
     delete = () => new Promise<void>(
         (resolve, reject) =>
             this.db.run(
-                'DELETE FROM User WHERE id = ?',
+                'DELETE FROM Post WHERE id = ?',
                 [this._id],
                 (error) =>
                     error ? reject(error) : resolve()

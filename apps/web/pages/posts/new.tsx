@@ -36,7 +36,12 @@ export default function Home() {
                         title,
                         content,
                         authorId: user.id,
-                    }).then(() => router.push('/'));
+                    }).then(({ id }) =>
+                        router.push({
+                            pathname: '/posts/[post]',
+                            query: { post: id },
+                        })
+                    );
                 }}
             >
                 <label htmlFor="_title">Title: </label>

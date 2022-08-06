@@ -9,7 +9,7 @@ export function useQuery<T extends (input: any, context: any) => any>(
         isLoading: boolean;
         isError: boolean;
         again: () => void;
-        setInput: React.Dispatch<any>;
+        setInput: React.Dispatch<Parameters<T>[0]>;
     }
 ];
 
@@ -27,7 +27,7 @@ export function useMutation<T extends (input: any, context: any) => any>(
         isLoading: boolean;
         isError: boolean;
         again: () => void;
-        setInput: React.Dispatch<any>;
+        setInput: React.Dispatch<Parameters<T>[0]>;
     }
 ];
 
@@ -39,4 +39,10 @@ export class Cookies extends Map<string, string> {
     constructor(req: NextApiRequest, res: NextApiResponse);
 
     set(key: string, value: string): this;
+}
+
+export interface config {
+    api?: {
+        context?: (req: NextApiRequest, res: NextApiResponse) => Promise<any>;
+    };
 }
