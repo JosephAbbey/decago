@@ -13,8 +13,8 @@ const db: Promise<any> = extract(
                     dirname(
                         require.resolve('@decago/orm/package.json')
                     ).substring(5) +
-                    '/providers'
-            ).replaceAll('\\', '\\\\')
+                    '/providers.js'
+            ).replaceAll('\\', '/')
         ),
     {
         target: 99,
@@ -35,7 +35,8 @@ export const schema: Promise<any> = extract(join(project, './db/schema.ts'), (da
             '.' +
                 dirname(
                     require.resolve('@decago/object-definition/package.json')
-                ).substring(5)
-        ).replaceAll('\\', '\\\\')
+                ).substring(5) +
+                '/index.js'
+        ).replaceAll('\\', '/')
     )
 );
