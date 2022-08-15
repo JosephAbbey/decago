@@ -1,5 +1,4 @@
 import { t } from '@decago/object-definition';
-// import { DB } from '../../db';
 
 function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -25,8 +24,7 @@ export const getSchemaOutput = t.listOf(
 export default function getSchema(
     input: t.infer<typeof getSchemaInput>,
     context: {
-        db: // DB
-        any;
+        db: any;
         schema: {
             [key: string]: t.Model<{
                 [key: string]: t.Type;

@@ -1,5 +1,4 @@
 import { t } from '@decago/object-definition';
-import { DB } from '../../db';
 
 export default async function getRows(
     input: {
@@ -16,7 +15,7 @@ export default async function getRows(
         };
     },
     context: {
-        db: DB;
+        db: any;
         schema: {
             [key: string]: t.Model<{
                 [key: string]: t.Type;
