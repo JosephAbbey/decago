@@ -73,28 +73,28 @@
     to-fast-properties "^2.0.0"
 
 "@decago/object-definition@./packages/decago-object-definition":
-  version "1.5.1"
+  version "1.6.0"
 
 "@decago/orm@./packages/decago-orm":
-  version "1.5.1"
+  version "1.6.0"
   dependencies:
-    "@decago/object-definition" "^1.5.1"
-    "@decago/typescript-extractor" "^1.0.1"
+    "@decago/object-definition" "^1.6.0"
+    "@decago/typescript-extractor" "^1.6.0"
     cli-highlight "^2.1.11"
     sqlite3 "^5.0.10"
     tempy "^3.0.0"
     typescript "^4.7.4"
 
 "@decago/serialize@./packages/decago-serialize":
-  version "1.5.0"
+  version "1.6.0"
 
 "@decago/studio@./packages/decago-studio":
-  version "0.0.0"
+  version "1.6.0"
   dependencies:
-    "@decago/object-definition" "./packages/decago-object-definition"
-    "@decago/orm" "./packages/decago-orm"
-    "@decago/serialize" "./packages/decago-serialize"
-    "@decago/typescript-extractor" "./packages/decago-typescript-extractor"
+    "@decago/object-definition" "1.6.0"
+    "@decago/orm" "1.6.0"
+    "@decago/serialize" "1.6.0"
+    "@decago/typescript-extractor" "1.6.0"
     "@emotion/cache" "^11.9.3"
     "@emotion/react" "^11.9.3"
     "@emotion/server" "^11.4.0"
@@ -102,16 +102,10 @@
     "@mui/icons-material" "^5.8.4"
     "@mui/material" "^5.9.2"
     "@mui/x-data-grid" "^5.15.0"
-    decago "./packages/decago"
+    decago "1.6.0"
     next "^12.2.3"
     react "18.2.0"
     react-dom "18.2.0"
-
-"@decago/typescript-extractor@./packages/decago-typescript-extractor":
-  version "1.0.1"
-  dependencies:
-    tempy "^3.0.0"
-    typescript "^4.7.4"
 
 "@emotion/babel-plugin@^11.7.1":
   version "11.9.5"
@@ -1509,9 +1503,9 @@
     next "*"
 
 "@types/node@*", "@types/node@^18.6.1":
-  version "18.6.1"
-  resolved "https://registry.npmjs.org/@types/node/-/node-18.6.1.tgz"
-  integrity sha512-z+2vB6yDt1fNwKOeGbckpmirO+VBDuQqecXkgeIqDlaOtmKn6hPR/viQ8cxCfqLU4fTlvM3+YjM367TukWdxpg==
+  version "18.7.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.4.tgz#95baa50846ae112a7376869d49fec23b2506c69d"
+  integrity sha512-RzRcw8c0B8LzryWOR4Wj7YOTFXvdYKwvrb6xQQyuDfnlTxwYXGCV5RZ/TEbq5L5kn+w3rliHAUyRcG1RtbmTFg==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
@@ -2429,10 +2423,10 @@ debuglog@^1.0.1:
   integrity sha512-syBZ+rnAK3EgMsH2aYEOLUW7mZSY9Gb+0wUMCFsZvcmiz+HigA0LOcq/HoQqVuGG+EKykunc7QG2bzrponfaSw==
 
 decago@./packages/decago:
-  version "1.5.1"
+  version "1.6.0"
   dependencies:
-    "@decago/orm" "^1.5.1"
-    "@decago/serialize" "^1.5.0"
+    "@decago/orm" "^1.6.0"
+    "@decago/serialize" "^1.6.0"
     commander "^9.4.0"
     next "^12.2.3"
 
@@ -2935,6 +2929,14 @@ esutils@^2.0.2:
   version "2.0.3"
   resolved "https://registry.npmjs.org/esutils/-/esutils-2.0.3.tgz"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
+
+eval@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/eval/-/eval-0.1.8.tgz#2b903473b8cc1d1989b83a1e7923f883eb357f85"
+  integrity sha512-EzV94NYKoO09GLXGjXj9JIlXijVck4ONSr5wiCWDvhsvj5jxSrzTmRU/9C1DyB6uToszLs8aifA6NQ7lEQdvFw==
+  dependencies:
+    "@types/node" "*"
+    require-like ">= 0.1.1"
 
 eventemitter3@^4.0.4:
   version "4.0.7"
@@ -5425,6 +5427,11 @@ require-directory@^2.1.1:
   version "2.1.1"
   resolved "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz"
   integrity sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==
+
+"require-like@>= 0.1.1":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/require-like/-/require-like-0.1.2.tgz#ad6f30c13becd797010c468afa775c0c0a6b47fa"
+  integrity sha512-oyrU88skkMtDdauHDuKVrgR+zuItqr6/c//FXzvmxRGMexSDc6hNvJInGW3LL46n+8b50RykrvwSUIIQH2LQ5A==
 
 reselect@^4.1.6:
   version "4.1.6"
