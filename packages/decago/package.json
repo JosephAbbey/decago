@@ -1,6 +1,6 @@
 {
     "name": "decago",
-    "version": "1.6.0",
+    "version": "1.7.0-alpha.0",
     "main": "index.js",
     "license": "MIT",
     "bin": {
@@ -16,7 +16,7 @@
         "prepublishOnly": "npm run build"
     },
     "dependencies": {
-        "@decago/orm": "^1.6.0",
+        "@decago/orm": "^1.7.0-alpha.0",
         "@decago/serialize": "^1.6.0",
         "commander": "^9.4.0",
         "next": "^12.2.3"

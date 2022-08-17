@@ -1,6 +1,6 @@
 {
     "name": "@decago/orm",
-    "version": "1.6.0",
+    "version": "1.7.0-alpha.0",
     "main": "index.js",
     "license": "MIT",
     "bin": {
@@ -8,7 +8,7 @@
     },
     "dependencies": {
         "@decago/object-definition": "^1.6.0",
-        "@decago/typescript-extractor": "^1.6.0",
+        "@decago/typescript-extractor": "^1.7.0-alpha.0",
         "cli-highlight": "^2.1.11",
         "sqlite3": "^5.0.10",
         "tempy": "^3.0.0",

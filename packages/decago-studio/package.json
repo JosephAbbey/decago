@@ -1,6 +1,6 @@
 {
     "name": "@decago/studio",
-    "version": "1.6.0",
+    "version": "1.7.0-alpha.0",
     "main": "bin/decago-studio",
     "bin": {
         "decago-studio": "bin/decago-studio"
@@ -12,9 +12,9 @@
     },
     "dependencies": {
         "@decago/object-definition": "1.6.0",
-        "@decago/orm": "1.6.0",
+        "@decago/orm": "^1.7.0-alpha.0",
         "@decago/serialize": "1.6.0",
-        "@decago/typescript-extractor": "1.6.0",
+        "@decago/typescript-extractor": "^1.7.0-alpha.0",
         "@emotion/cache": "^11.9.3",
         "@emotion/react": "^11.9.3",
         "@emotion/server": "^11.4.0",
@@ -22,7 +22,7 @@
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.9.2",
         "@mui/x-data-grid": "^5.15.0",
-        "decago": "1.6.0",
+        "decago": "^1.7.0-alpha.0",
         "next": "^12.2.3",
         "react": "18.2.0",
         "react-dom": "18.2.0"

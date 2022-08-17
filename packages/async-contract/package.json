@@ -1,6 +1,6 @@
 {
   "name": "async-contract",
-  "version": "1.0.0",
+  "version": "1.7.0-alpha.0",
   "main": "./build/src/index.js",
   "license": "MIT",
   "directories": {
@@ -9,16 +9,16 @@
     "test": "./src"
   },
   "devDependencies": {
-    "typescript": "^4.7.4",
-    "gts": "^3.1.0",
-    "@types/node": "^14.11.2",
-    "mocha": "^10.0.0",
-    "@types/mocha": "^9.1.1",
-    "chai": "^4.3.6",
     "@types/chai": "^4.3.3",
-    "chai-as-promised": "^7.1.1",
     "@types/chai-as-promised": "^7.1.5",
-    "ts-node": "^10.9.1"
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^14.11.2",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "gts": "^3.1.0",
+    "mocha": "^10.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4"
   },
   "scripts": {
     "lint": "gts lint",
