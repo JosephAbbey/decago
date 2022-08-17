@@ -1,0 +1,7 @@
+{
+  "extension": ["ts"],
+  "spec": "src/**/*.spec.ts",
+  "require": "./node_modules/ts-node/register",
+  "parallel": true,
+  "jobs": "max"
+}
